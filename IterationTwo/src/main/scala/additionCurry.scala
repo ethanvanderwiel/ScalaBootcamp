@@ -1,8 +1,8 @@
 object AddCurryTest {
-    def additionCurry(i: Int) =  (j: Int) => i + j
+    def additionCurry(i: Int) =  (j: Int) => i + j //What is the benefit of doing this exactly?
 
-    def ++ = additionCurry(1)
-    def -- = additionCurry(-1)
+    def ++ = additionCurry(1) //Increment
+    def -- = additionCurry(-1) //Decrement
 
     //skeleton of this method given in doc
     def mapOverListRec(ints: List[Int], f: Int => Int): List[Int] = {
@@ -24,6 +24,7 @@ object AddCurryTest {
         }
     }
 
+    //Testing the increment, decrement, and mapping
     def main(args: Array[String]) = {
         val firstAdd = additionCurry(3)
         val res = firstAdd(5)

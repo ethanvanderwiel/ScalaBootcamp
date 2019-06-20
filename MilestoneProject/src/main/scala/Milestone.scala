@@ -13,7 +13,7 @@ object MilestoneMain {
     * I chose to return the value as a tuple, but could be returned as string or Search object
     */
     def mostFrequentUserSearch(user: User): (String, Int) = {
-        var SearchMap = Map[String, Int]()
+        var SearchMap = Map[String, Int]() 
         for {
             search <- user.searches
         } yield ( //I don't understand why I need yield here
@@ -47,7 +47,7 @@ object MilestoneMain {
 
     /*
     * Method made purely for fun/setting up the testing quicker. Doc wanted 10 users, which would take forever to make by hand
-    * using the old method
+    * using the old method. Also provided more practice with for comprehension, lists, tuples, etc
     */
     def makeSearch(searches: List[(String, List[(String, String)])]): List[Search] = {
         for {
