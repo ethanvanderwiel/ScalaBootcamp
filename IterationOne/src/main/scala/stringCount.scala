@@ -13,10 +13,8 @@ class stringCount {
             Option(string) match {
                 case None => 0
                 //If string is not null, match lengths
-                case _ => string match {
-                    case "" => -1
-                    case _ => string.length()
-                }
+                case Some("") => -1
+                case Some(_) => string.length
             }
         )
         countList
