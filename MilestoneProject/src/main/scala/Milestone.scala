@@ -6,43 +6,35 @@ case class User(username: String, password: String, searches: List[Search])
 
 object MilestoneMain {
 
+
     /*
-    * Finds the most frequent search of an individual user. For each search, 
-    * if the key exists in a map, update value, otherwise add map element with v set to 1
-    * Finally, sorts the map by value and returns the highest valued search (last tuple of list).
-    * I chose to return the value as a tuple, but could be returned as string or Search object
+    * Finds the most frequent search within a user's search history. Uses foldLeft to create a new map that combines
+    * already used keys and increments their value counter. Finally, converts the map to a Seq to be sorted and returns
+    * the last key-value (highest value)
     */
-    def mostFrequentUserSearch(user: User): (String, Int) = {
-        var SearchMap = Map[String, Int]() 
-        for {
-            search <- user.searches
-        } yield ( //I don't understand why I need yield here
-            (SearchMap get search.searchString) match {
-                case None => SearchMap += (search.searchString -> 1)
-                case _ => SearchMap += (search.searchString -> ((SearchMap get search.searchString).get + 1))
+    def mostFrequentUserSearchFold(user: User): (String, Int) = {
+        val res = user.searches.foldLeft(Map.empty[String, Int])( (map, search) => map + (
+            (map get search.searchString) match {
+                case None => (search.searchString -> 1)
+                case _ => (search.searchString -> ((map get search.searchString).get + 1))
             }
-        )      
-        SearchMap.toSeq.sortBy(_._2).apply(SearchMap.size - 1)  
+        ) )
+        res.toSeq.sortBy(_._2).apply(res.size - 1)
     }
 
     /*
-    * Finds the most frequent search among all users. Almost identical
-    * in terms of algorthm to the mostFrequentUserSearch method, but uses
-    * nested for to search through all users. Probably a way to consolidate this, 
-    * but I haven't thought of it
+    * Converts all users to a list that contains every search using flat map. Then, does the same as above
+    * 
     */
-    def mostCommonSearchAllUsers(users: List[User]): (String, Int)= {
-        var SearchMap = Map[String, Int]()
-        for {
-            user <- users
-            search <- user.searches
-        } yield ( //I don't understand why I need yield here
-            (SearchMap get search.searchString) match {
-                case None => SearchMap += (search.searchString -> 1)
-                case _ => SearchMap += (search.searchString -> ((SearchMap get search.searchString).get + 1))
+    def mostCommonSearchAllUsersFold(users: List[User]): (String, Int) = {
+        val totalSearches = users flatMap (user => user.searches)
+        val res = totalSearches.foldLeft(Map.empty[String, Int])( (map, search) => map + (
+            (map get search.searchString) match {
+                case None => (search.searchString -> 1)
+                case _ => (search.searchString -> ((map get search.searchString).get + 1))
             }
-        )      
-        SearchMap.toSeq.sortBy(_._2).apply(SearchMap.size - 1)
+        ) )
+        res.toSeq.sortBy(_._2).apply(res.size - 1)
     }
 
     /*
@@ -98,8 +90,7 @@ object MilestoneMain {
             user <- userList.take(3) //iteration 1 testing, successfully tested
         } yield (println(user + "\n"))
 
-        
-        println(MilestoneMain.mostFrequentUserSearch(userList(8)))  //iteration 2 testing: (Music, 2), successfully tested
-        println(MilestoneMain.mostCommonSearchAllUsers(userList))  //iteration 2 testing: (Examples, 5), successfully tested   
+        println(mostFrequentUserSearchFold(userList(8))) //iteration 2 testing: (Music, 2), successfully tested 
+        println(mostCommonSearchAllUsersFold(userList)) //iteration 2 testing: (Examples, 5), succesffuly tested
     }
 }
