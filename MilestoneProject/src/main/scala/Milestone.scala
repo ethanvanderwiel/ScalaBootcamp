@@ -4,7 +4,7 @@ case class Search(searchString: String, results: List[Result])
 
 case class User(username: String, password: String, searches: List[Search])
 
-object MilestoneMain {
+object Milestone {
 
 
     /*
