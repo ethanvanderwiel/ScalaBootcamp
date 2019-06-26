@@ -181,9 +181,14 @@ object Problems {
     }
 
     //P22
-    // def range(i: Int, j: Int): List[Int] = {
-         
-    // }
+    def range(i: Int, j: Int): List[Int] = {
+        def go(i: Int, j: Int, accum: List[Int]): List[Int] = {
+            if( i == j ) accum :+ j
+            else i +: accum ::: go(i + 1, j, accum)
+        }
+        val accum: List[Int] = List()
+        go(i, j, accum)
+    }
 
     //P23 - For later exercises to use this, I put the constraint of no repeats. This is why I needed the recursive call
     // With repeats, it is just a simple for comp.

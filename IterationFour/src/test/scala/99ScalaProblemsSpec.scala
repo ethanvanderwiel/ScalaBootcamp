@@ -54,6 +54,7 @@ object MilestoneSpec extends Specification {
             Problems.rotate(-22, List('a, 'b, 'c, 'd, 'e, 'f, 'g, 'h, 'i, 'j, 'k)) must beEqualTo(List('a, 'b, 'c, 'd, 'e, 'f, 'g, 'h, 'i, 'j, 'k))
             Problems.rotate(-2, List('a, 'b, 'c, 'd, 'e, 'f, 'g, 'h, 'i, 'j, 'k)) must beEqualTo(List('j, 'k, 'a, 'b, 'c, 'd, 'e, 'f, 'g, 'h, 'i))
 
+            Problems.range(4, 9) must beEqualTo(List(4, 5, 6, 7, 8, 9))
             Problems.removeAt(1, List('a, 'b, 'c, 'd)) must beEqualTo((List('a, 'c, 'd),'b))
             Problems.removeAt(0, List('a, 'b, 'c, 'd)) must beEqualTo((List('b, 'c, 'd),'a))
 
