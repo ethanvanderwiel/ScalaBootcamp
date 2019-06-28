@@ -82,6 +82,7 @@ object Exercises {
     }
 
     def flatten[A](as: ListImpl[ListImpl[A]]): ListImpl[A] = as match {
+        case Empty => Empty
         case Cons(h , Empty) => h
         case Cons(h, t) => append(h, flatten(t))
     }
