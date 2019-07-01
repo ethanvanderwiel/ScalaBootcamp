@@ -1,5 +1,6 @@
 import org.specs2.mutable.Specification
 
+//Need to replace comments with what they should be. Guide isn't clear on what it means (xxx should {xxx in {...}})
 object AbstractImplSpec extends Specification {
     "I don't know what this means" should {
         "respond" in {
