@@ -9,26 +9,57 @@ import cats.effect._
 import org.http4s._
 import org.http4s.dsl.io._
 import org.http4s.server.blaze._
+import org.http4s.circe._
+import io.circe._
+import io.circe.literal._
+import org.json4s._
+import org.json4s.native.Serialization._
+import org.json4s.native.Serialization
 
-object Main {
+
+//I changed header to a list of headers, it can easily be a header but this makes more sense to me as 
+//http4s already returned custom type Header, which was almost a list
+case class HttpResponse(header: List[String], body: String, statusCode: Int)
+trait HttpClient {
     
-    def main(args: Array[String]):Unit = {
+    implicit val formats = Serialization.formats(NoTypeHints)
+    //both methods should return HttpRresponse, not Unit
+    def executeHttpPost(url: String, values: Map[String,String]): Unit= {
         val httpClient = Http1Client[IO]().unsafeRunSync
-        case class AuthResponse(access_token: String)
-        implicit val authResponseEntityDecoder: EntityDecoder[IO, AuthResponse] = null
-        val request = GET(
-            Uri.uri("https://postman-echo.com/get?foo1=bar1&foo2=bar2")
-        )
+        val postUri = Uri.fromString(url)
         val postRequest = POST(
-            Uri.uri("https://my-lovely-api.com/oauth2/token"),
-            UrlForm(
-                "grant_type" -> "client_credentials",
-                "client_id" -> "my-awesome-client",
-                "client_secret" -> "s3cr3t"
-            )
+            postUri.valueOr(throw _),
+            write(values)
         )
-        //println(httpClient.expect[String](request).unsafeRunSync())
-        println(httpClient.expect[AuthResponse](postRequest).unsafeRunSync())
+        val res = Ok(httpClient.expect[String](postRequest).unsafeRunSync)
+        val body = res.flatMap(_.as[Json]).unsafeRunSync
+        val resUnsafe = res.unsafeRunSync
+        val header = resUnsafe.headers.toList.map(s => s.toString)
+        val status= resUnsafe.status
+        httpClient.shutdownNow()
+        HttpResponse(header, body.toString, status.toString.substring(0,3).toInt)
+    }
+    def executeHttpGet(url: String): HttpResponse = {
+        val httpClient = Http1Client[IO]().unsafeRunSync
+        val getUri = Uri.fromString(url)
+        val request = GET(
+            getUri.valueOr(throw _)//handles potential error
+        )
+        val res = Ok(httpClient.expect[String](request).unsafeRunSync)
+        val body = res.flatMap(_.as[Json]).unsafeRunSync
+        val resUnsafe = res.unsafeRunSync
+        val header = resUnsafe.headers.toList.map(s => s.toString)
+        val status= resUnsafe.status
+        httpClient.shutdownNow()
+        HttpResponse(header, body.toString, status.toString.substring(0,3).toInt)
+    }
+}
+
+
+object Main extends HttpClient{
+    def main(args: Array[String]):Unit = {
+        executeHttpGet("https://api.duckduckgo.com/?q=Dogs&format=json")
+        executeHttpPost("https://postman-echo.com/post", Map("hello" -> "2", "wow"->"this doesn't work yet"))
     }
     
 }
