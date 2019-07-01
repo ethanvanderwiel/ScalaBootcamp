@@ -72,8 +72,7 @@ object Exercises {
 
     def filter[A](as: ListImpl[A], f: A => Boolean): ListImpl[A] = as match {
         case Empty => Empty
-        case Cons(h, t) if (f(h)) => Cons(h, filter(t, f))
-        case Cons(h, t) => filter(t, f)
+        case Cons(h, t)  => if (f(h)) Cons(h, filter(t, f)) else filter(t, f)
     }
 
     def append[A](x: ListImpl[A], y: ListImpl[A]): ListImpl[A] = x match {
@@ -83,7 +82,7 @@ object Exercises {
 
     def flatten[A](as: ListImpl[ListImpl[A]]): ListImpl[A] = as match {
         case Empty => Empty
-        case Cons(h , Empty) => h
+        //case Cons(h , Empty) => h test for isn't needed
         case Cons(h, t) => append(h, flatten(t))
     }
 
@@ -103,14 +102,9 @@ object Exercises {
     }
 
     //Exact same as my implementation in 99ScalaProblems.
+    //Change to use fold
     def reverse[A](as: ListImpl[A]): ListImpl[A] = {
-        @scala.annotation.tailrec
-        def rec(as: ListImpl[A], accum: ListImpl[A]): ListImpl[A] = as match {
-            case Empty => accum
-            case Cons(h, t) => val accumTemp = Cons(h, accum)
-                rec(t, accumTemp)
-        }
-        rec(as, Empty)
+        ListImpl.foldLeft(as, Empty, (t: ListImpl[A], h: A) => append(Cons(h, Empty), t))
     }
 
 }

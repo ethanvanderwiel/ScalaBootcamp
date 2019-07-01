@@ -21,11 +21,11 @@ import org.json4s.native.Serialization
 //http4s already returned custom type Header, which was almost a list
 case class HttpResponse(header: List[String], body: String, statusCode: Int)
 trait HttpClient {
-    
+    val httpClient = Http1Client[IO]().unsafeRunSync
     implicit val formats = Serialization.formats(NoTypeHints)
     //both methods should return HttpRresponse, not Unit
     def executeHttpPost(url: String, values: Map[String,String]): Unit= {
-        val httpClient = Http1Client[IO]().unsafeRunSync
+        
         val postUri = Uri.fromString(url)
         val postRequest = POST(
             postUri.valueOr(throw _),
@@ -36,7 +36,7 @@ trait HttpClient {
         val resUnsafe = res.unsafeRunSync
         val header = resUnsafe.headers.toList.map(s => s.toString)
         val status= resUnsafe.status
-        httpClient.shutdownNow()
+        
         HttpResponse(header, body.toString, status.toString.substring(0,3).toInt)
     }
     def executeHttpGet(url: String): HttpResponse = {
@@ -50,7 +50,7 @@ trait HttpClient {
         val resUnsafe = res.unsafeRunSync
         val header = resUnsafe.headers.toList.map(s => s.toString)
         val status= resUnsafe.status
-        httpClient.shutdownNow()
+       
         HttpResponse(header, body.toString, status.toString.substring(0,3).toInt)
     }
 }

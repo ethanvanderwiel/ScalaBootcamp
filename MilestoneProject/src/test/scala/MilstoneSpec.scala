@@ -2,9 +2,7 @@ import org.specs2.mutable.Specification
 
 //Need to replace comments with what they should be. Guide isn't clear on what it means (xxx should {xxx in {...}})
 object MilestoneSpec extends Specification {
-    "I don't know what this means" should {
-        "respond" in {
-            val searchList = List(
+val searchList = List(
             ("Big Cats", List(("Tiger", "A fearsome cat"), ("Lion", "King of the jungle"))),
             ("Terriers", List(("Bull Terrier", "A terrier bull mix.... I think"), ("English Terrier", "A terrier, but with an accent"))) ,    
             ("Sports", List(("Tennis", "A sport with a yellow ball"), ("Soccer", "A sport with a white ball"))),
@@ -38,9 +36,15 @@ object MilestoneSpec extends Specification {
                 User("user9", "userpass9", Milestone.makeSearch(List(searchList(12), searchList(12), searchList(13)))),
                 User("user10", "userpass10", Milestone.makeSearch(List(searchList(7), searchList(1), searchList(3))))
             )
-
+    "Most Frequent User Search Fold" should {
+        "Find max user search term" in {
             Milestone.mostFrequentUserSearchFold(userList(8)) must beEqualTo( ("Music", 2) )
             Milestone.mostFrequentUserSearchFold(userList(3)) must beEqualTo( ("Examples", 2) )
+        }
+        
+    }
+    "Most Frequent search across all users" should {
+        "find max search term" in {
             Milestone.mostCommonSearchAllUsersFold(userList) must beEqualTo( ("Examples", 5) )
         }
     }

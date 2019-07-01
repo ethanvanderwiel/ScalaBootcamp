@@ -7,11 +7,10 @@ object SealedTraits {
 
     def interpret(v: Values): String = {
         v match {
-            case x: Numbers if x.i < 10 => s"This is a number less than 10: ${x.i}"
-            case x: Numbers => s"This is a number 10 or greater: ${x.i}"
-            case x: Strings => s"This is a string: ${x.s}"
-            case x: UnaryFunction => s"This is a unary function: ${x.f}" //Unsure if there is a way to see function body
-            case _ => s"Uh oh, this is an unexpected result: ${v}"
+            case Numbers(i) if i < 10 => s"This is a number less than 10: ${i}"
+            case Numbers(i) => s"This is a number 10 or greater: ${i}"
+            case Strings(i) => s"This is a string: ${i}"
+            case UnaryFunction(f) => s"This is a unary function: ${}" //Unsure if there is a way to see function body
         }
     }
 

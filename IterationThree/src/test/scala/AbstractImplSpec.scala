@@ -1,19 +1,35 @@
 import org.specs2.mutable.Specification
 
-//Need to replace comments with what they should be. Guide isn't clear on what it means (xxx should {xxx in {...}})
-object AbstractImplSpec extends Specification {
-    "I don't know what this means" should {
-        "respond" in {
-            val Norris = RaceCarFactory("F1Car")
-            val Rossi = RaceCarFactory("IndyCar")
 
-            Norris.startEngine must beEqualTo("Lando Norris's Engine started! Ready to race")
-            Rossi.startEngine must beEqualTo("Alex Rossi's Engine started! Ready to race") 
-            Rossi.pitStop must beEqualTo("Alex Rossi is in the pit lane! Car: Up! Tires: Changed! Car: Down! Go!") 
-            Norris.custom must beEqualTo("Lando Norris opens the hatch: going fast!") 
-            Rossi.custom must beEqualTo("Alex Rossi is refueling....") 
-            Norris must haveClass[F1Car]
+object AbstractImplSpec extends Specification {
+    val Norris = RaceCarFactory("F1Car")
+    val Rossi = RaceCarFactory("IndyCar")
+    "Indycar" should {
+        "construct class" in {
             Rossi must haveClass[IndyCar]
+        }
+        "startEngine" in {
+            Rossi.startEngine must beEqualTo("Alex Rossi's Engine started! Ready to race") 
+        }
+        "pitStop" in {
+            Rossi.pitStop must beEqualTo("Alex Rossi is in the pit lane! Car: Up! Tires: Changed! Car: Down! Go!") 
+        }
+        "custom" in {
+            Rossi.custom must beEqualTo("Alex Rossi is refueling....")
+        }
+    }
+    "F1Car" should {
+        "construct class" in {
+            Norris must haveClass[F1Car]
+        }
+        "startEngine" in {
+             Norris.startEngine must beEqualTo("Lando Norris's Engine started! Ready to race")
+        }
+        "pitStop" in {
+            Norris.pitStop must beEqualTo("Lando Norris is in the pit lane! Car: Up! Tires: Changed! Car: Down! Go!") 
+        }
+        "custom" in {
+            Norris.custom must beEqualTo("Lando Norris opens the hatch: going fast!") 
         }
     }
 }
