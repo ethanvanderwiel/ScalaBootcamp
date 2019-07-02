@@ -56,11 +56,3 @@ trait HttpClient {
     }
 }
 
-
-object Main extends HttpClient{
-    def main(args: Array[String]):Unit = {
-        executeHttpGet("https://api.duckduckgo.com/?q=Dogs&format=json")
-        executeHttpPost("https://postman-echo.com/post", Map("hello" -> "2", "wow"->"this doesn't work yet"))
-    }
-    
-}
