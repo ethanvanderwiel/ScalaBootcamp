@@ -4,6 +4,7 @@ case class Search(searchString: String, results: Vector[Result])
 
 case class User(username: String, password: String, searches: Vector[Search])
 
+
 object Milestone {
 
 

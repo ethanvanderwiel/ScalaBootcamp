@@ -1,7 +1,10 @@
 import org.specs2.mutable.Specification
+import org.specs2.specification.BeforeAfterEach
+import org.specs2.specification.BeforeEach
 
 //Need to replace comments with what they should be. Guide isn't clear on what it means (xxx should {xxx in {...}})
 object MilestoneSpec extends Specification {
+    sequential
     lazy val searchVector = Vector(
         ("Cats"),
         ("Terriers") ,    
@@ -48,4 +51,43 @@ object MilestoneSpec extends Specification {
             Milestone.mostCommonSearchAllUsersFold(userVector) must beEqualTo( ("Examples", 5) )
         }
     }
+
+    "UserSearchRepository" should {
+        "clear" in {
+            UserSearchRepository.clear
+            UserSearchRepository.getAll must beEqualTo(Seq())
+        }
+        "create" in {
+            UserSearchRepository.create(userVector(0)) must beEqualTo(Some(userVector(0)))
+        }
+        "get all" in {
+            UserSearchRepository.clear
+            UserSearchRepository.create(userVector(0))
+            UserSearchRepository.create(userVector(1)) 
+            UserSearchRepository.getAll must beEqualTo(Seq(userVector(0), userVector(1)))
+        }
+        "delete" in {
+            UserSearchRepository.clear
+            UserSearchRepository.create(userVector(0))
+            UserSearchRepository.create(userVector(1))
+            UserSearchRepository.delete(userVector(0))
+            UserSearchRepository.getAll must beEqualTo(Seq(userVector(1)))
+        }
+        "delete nonexistent" in {
+            UserSearchRepository.clear
+            UserSearchRepository.create(userVector(0))
+            UserSearchRepository.create(userVector(1))
+            UserSearchRepository.delete(userVector(2)) must beEqualTo(None)
+            UserSearchRepository.getAll must beEqualTo(Seq(userVector(0), userVector(1)))
+        }
+        "create existent" in {
+            UserSearchRepository.clear
+            UserSearchRepository.create(userVector(0))
+            UserSearchRepository.create(userVector(1))
+            UserSearchRepository.create(userVector(0))
+            UserSearchRepository.getAll must beEqualTo(Seq(userVector(0), userVector(1)))
+        }
+    }
+    
+
 }

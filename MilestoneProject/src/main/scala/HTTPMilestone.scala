@@ -2,13 +2,13 @@ import io.circe._, io.circe.parser._
 import cats.syntax.either._
 
 
-trait Repository[A] {
-  def getAll: Seq[A]
-  def get(id: String): Option[A]
-  def create(x: A): Option[A]
-  def update(x: A): Option[A]
-  def delete(x: A): Option[A]
-}
+// trait Repository[A] {
+//   def getAll: Seq[A]
+//   def get(id: String): Option[A]
+//   def create(x: A): Option[A]
+//   def update(x: A): Option[A]
+//   def delete(x: A): Option[A]
+// }
 
 
 object http extends HttpClient{
