@@ -2,15 +2,6 @@ import io.circe._, io.circe.parser._
 import cats.syntax.either._
 
 
-// trait Repository[A] {
-//   def getAll: Seq[A]
-//   def get(id: String): Option[A]
-//   def create(x: A): Option[A]
-//   def update(x: A): Option[A]
-//   def delete(x: A): Option[A]
-// }
-
-
 object http extends HttpClient{
 
     def fetchResults(term: String): Vector[Result] = {
@@ -30,9 +21,9 @@ object http extends HttpClient{
             (curr: Json) => {
                 val currentCursor: HCursor = curr.hcursor
                 currentCursor.downField("Result").as[String]
-            } 
+            }
         )
-        /* Sorts through the collection by value, putting None if left. 
+        /* Sorts through the collection by value, putting None if left.
             Filters out the none */
         val sorted = (collection.collect {
             case Right(value) => value
@@ -47,11 +38,11 @@ object http extends HttpClient{
                 Result(term, desc)
             }
         )
-        
+
     }
 
 
-    
+
 
     def main(args: Array[String]) = {
         val res = searchFor("Dogs")
