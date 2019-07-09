@@ -28,12 +28,13 @@ trait HttpClient {
     def executeHttpPost(url: String, values: Map[String,String]): HttpResponse = {
 
         val postUri = Uri.fromString(url)
+        val rawJson = write(values)
         val postRequest = POST(
             postUri.valueOr(throw _),
-            write(values)
+            rawJson
         )
         val res = Ok(httpClient.expect[String](postRequest).unsafeRunSync)
-        val body = res.flatMap(_.as[Json]).unsafeRunSync
+        val body = res.flatMap(_.as[String]).unsafeRunSync
         val resUnsafe = res.unsafeRunSync
         val header = resUnsafe.headers.toList.map(s => s.toString)
         val status= resUnsafe.status
@@ -46,12 +47,13 @@ trait HttpClient {
             getUri.valueOr(throw _)//handles potential error
         )
         val res = Ok(httpClient.expect[String](request).unsafeRunSync)
-        val body = res.flatMap(_.as[Json]).unsafeRunSync
+        val body = res.flatMap(_.as[String]).unsafeRunSync
         val resUnsafe = res.unsafeRunSync
         val header = resUnsafe.headers.toList.map(s => s.toString)
         val status= resUnsafe.status
 
         HttpResponse(header, body.toString, status.toString.substring(0,3).toInt)
     }
+
 }
 

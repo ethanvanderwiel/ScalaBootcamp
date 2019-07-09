@@ -7,7 +7,7 @@ object MilestoneSpec extends Specification {
     sequential
     lazy val searchVector = Vector(
         ("Cats"),
-        ("Terriers") ,    
+        ("Terriers") ,
         ("Sports"),
         ("activities"),
         ("Cities"),
@@ -44,7 +44,7 @@ object MilestoneSpec extends Specification {
             Milestone.mostFrequentUserSearchFold(userVector(8)) must beEqualTo( ("Music", 2) )
             Milestone.mostFrequentUserSearchFold(userVector(3)) must beEqualTo( ("Examples", 2) )
         }
-        
+
     }
     "Most Frequent search across all users" should {
         "find max search term" in {
@@ -63,7 +63,7 @@ object MilestoneSpec extends Specification {
         "get all" in {
             UserSearchRepository.clear
             UserSearchRepository.create(userVector(0))
-            UserSearchRepository.create(userVector(1)) 
+            UserSearchRepository.create(userVector(1))
             UserSearchRepository.getAll must beEqualTo(Seq(userVector(0), userVector(1)))
         }
         "delete" in {
@@ -88,6 +88,6 @@ object MilestoneSpec extends Specification {
             UserSearchRepository.getAll must beEqualTo(Seq(userVector(0), userVector(1)))
         }
     }
-    
+
 
 }

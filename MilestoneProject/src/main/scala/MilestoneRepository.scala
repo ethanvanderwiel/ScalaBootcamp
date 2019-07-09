@@ -54,7 +54,7 @@ object UserSearchRepository extends Repository[User]{
   /* Deletes a current user. Returns None if given user doesn't exist */
     override def delete(x: User): Option[User] = get(x.username) match {
         case None => None
-        case Some(user) => val deleted = Vector() ++ getAll.filterNot((user: User) => (user == x))
+        case Some(user) => val deleted = Vector() ++ getAll.filterNot((newUser: User) => (newUser.username == user.username))
                             JsonReadWrite.writeJson(Users(deleted))
                             Some(x)
 

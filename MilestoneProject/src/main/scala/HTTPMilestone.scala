@@ -40,13 +40,12 @@ object http extends HttpClient{
         )
 
     }
-
-
-
-
     def main(args: Array[String]) = {
-        val res = searchFor("Dogs")
-        println(createResults(res))
+      //val userMap = Map("username" -> "user1", "password" -> "pass1")
+      val changePass = Map("username" -> "user1", "oldPassword" -> "pass1", "newPassword" -> "newPass!")
+      //println(executeHttpPost("http://localhost:8000/create_user", userMap ))
+      //println(executeHttpGet("http://localhost:8000/ping"))
+      println(executeHttpPost("http://localhost:8000/change_password", changePass))
     }
 
 }
