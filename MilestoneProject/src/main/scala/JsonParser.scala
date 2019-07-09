@@ -8,7 +8,7 @@ import java.io._
 case class Users(users: Vector[User])
 object JsonReadWrite {
 
-
+    /* Writes the Users object to the json database file. */
     def writeJson(users: Users): Unit = {
         implicit val formats = DefaultFormats
         val jsonString = write(users)
@@ -18,43 +18,47 @@ object JsonReadWrite {
         bw.close()
     }
 
+    /* Parses the users data from the Json Database */
     def parseUsers(s: String): Seq[User] = s match {
         case "" => Seq()
-        case _ => 
+        case _ =>
             val json: Json = io.circe.parser.parse(s).getOrElse(Json.Null)
             val cursor: HCursor = json.hcursor
             Seq() ++ cursor.downField("users")
                             .values.get.map ((current: Json) => {parseUser(current)})
     }
 
+    /* Parses individual user data from Json Database */
     def parseUser(user: Json): User = {
         val currentCursor: HCursor = user.hcursor
-        User(filterRight(currentCursor.downField("username").as[String]), 
+        User(filterRight(currentCursor.downField("username").as[String]),
              filterRight(currentCursor.downField("password").as[String]),
             Vector() ++ currentCursor.downField("searches")
                 .values
                 .get
                 .map((current: Json) => parseSearch(current))
-        )     
+        )
     }
 
+    /* Parses individual search data from the Json Database */
     def parseSearch(search: Json): Search = {
         val currentCursor: HCursor = search.hcursor
-        Search(filterRight(currentCursor.downField("searchString").as[String]), 
+        Search(filterRight(currentCursor.downField("searchString").as[String]),
             Vector() ++ currentCursor.downField("results")
                 .values
                 .get
                 .map((current: Json) => parseResult(current))
         )
     }
-    
+
+    /* Parses individual result data from the Json Database*/
     def parseResult(result: Json) = {
         val currentCursor: HCursor = result.hcursor
         Result(filterRight(currentCursor.downField("name").as[String]),
                filterRight(currentCursor.downField("desc").as[String]))
     }
 
-    
+
     //I'm unsure if this method is needed or if there is a way to do this.
     def filterRight(i: io.circe.Decoder.Result[String]): String =i match{
         case Right(value) => value

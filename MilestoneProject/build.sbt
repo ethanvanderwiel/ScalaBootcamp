@@ -7,10 +7,9 @@ libraryDependencies ++= Seq(
   "org.http4s" %% "http4s-blaze-client" % http4sVersion,
   "org.json4s" %% "json4s-native" % "3.6.7"
 )
+
 resolvers += "bintray-banno-oss-releases" at "http://dl.bintray.com/banno/oss"
-libraryDependencies ++= Seq(
-  "jsonz" %% "jsonz" % "1.6.0"
-)
+
 libraryDependencies ++= Seq(
   "org.http4s" %% "http4s-circe" % http4sVersion,
 
@@ -25,6 +24,7 @@ libraryDependencies ++= Seq(
   "ch.qos.logback" % "logback-classic" % "1.2.3"
 
 )
+
 
 addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)
 resolvers += "bintray-banno-oss-releases" at "http://dl.bintray.com/banno/oss"

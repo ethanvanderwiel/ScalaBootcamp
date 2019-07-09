@@ -2,12 +2,12 @@
 
 
 object HybridName {
-  def apply(f: String, l: String): String = {
-    f + "-" + l
+  def apply(first: String, last: String): String = {
+    first + "-" + last
   }
-  def unapply(t: String): Option[(String, String)] = {
+  def unapply(hybrid: String): Option[(String, String)] = {
     val pattern = "(.*?)(-)(.*?)".r
-    t match {
+    hybrid match {
       case pattern(first, hyp, last) => Some((first, last))
       case _ => None
     }
@@ -15,6 +15,7 @@ object HybridName {
 }
 
 object HybridNameMain {
+  /* Said to create a main method, not test class */
   def main(args: Array[String]): Unit = {
     val hybrid = HybridName.apply("Hello", "World")
     val correct = HybridName.unapply(hybrid)
@@ -27,10 +28,11 @@ object HybridNameMain {
     val notMyName = "Willis-Knox" //false
     val noOnesName = "fjdslfs" //false
 
-    val bool = HybridName.unapply(noOnesName).getOrElse(("empty", "empty")) match {
-      case (_, "Vanderwiel") => true
-      case ("Vanderwiel", _) => true
-      case (_,_) => false
+
+    val bool = noOnesName match {
+      case HybridName("Vanderwiel", _) => true
+      case HybridName(_, "Vanderwiel") => true
+      case _ => false
     }
     println(bool)
   }

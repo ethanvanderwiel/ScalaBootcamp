@@ -15,7 +15,7 @@ object Problems {
     def nth[A](i: Int, list: List[A]): Option[A] = (i, list) match {
         case (0 , h::t) => Option(h)
         case (_ , h::t) => nth(i-1, t)
-        case (_, Nil) => None
+        case (_ , Nil) => None
     }
 
     //P04  - Changed from first review
@@ -55,7 +55,7 @@ object Problems {
         @scala.annotation.tailrec
         def go(list: List[A], accum: List[List[A]]): List[List[A]] = list match {
             case Nil => accum
-            case head :: tail if accum.length != 0 && head == accum(accum.length - 1)(0) => 
+            case head :: tail if accum.length != 0 && head == accum(accum.length - 1)(0) =>
                 go(list.tail, accum.updated(accum.length - 1, accum(accum.length - 1) :+ head)) //this whole case has become a mess. I'm sure there's an incredibly simple solution
             case head::tail => val accumTemp = accum :+ List(head)
                                 go(list.tail, accumTemp)
@@ -66,8 +66,8 @@ object Problems {
 
     def encode[A](list: List[A]): List[(Int, A)] = {
         val packed = pack(list)
-        val res = packed.map(x => (x.length, x(0)))  
-        res      
+        val res = packed.map(x => (x.length, x(0)))
+        res
     }
 
     //P12 - Looks like it wants me to skip P11?
@@ -85,8 +85,8 @@ object Problems {
         @scala.annotation.tailrec
         def go(list: List[A], accum: List[(Int, A)]): List[(Int, A)] = list match {
             case Nil => accum
-            case head :: tail if accum.length != 0 && head == accum(accum.length - 1)._2 => 
-                go(list.tail, accum.updated(accum.length - 1, (accum(accum.length - 1)._1 + 1, accum(accum.length-1)._2))) 
+            case head :: tail if accum.length != 0 && head == accum(accum.length - 1)._2 =>
+                go(list.tail, accum.updated(accum.length - 1, (accum(accum.length - 1)._1 + 1, accum(accum.length-1)._2)))
             case head::tail => val accumTemp = accum :+ (1, head)
                                 go(list.tail, accumTemp)
         }
@@ -121,7 +121,7 @@ object Problems {
         } yield ( list(cut) ),
         for {
             cut <- (i to (list.length - 1)).toList
-            if(cut < list.length) 
+            if(cut < list.length)
         } yield ( list(cut) )
         )
     }
@@ -152,7 +152,7 @@ object Problems {
 
     //P21
     def insertAt[A](a: A, i: Int, list: List[A]): List[A] = {
-        (slice(0, i, list):+ a):::slice(i, list.length, list) 
+        (slice(0, i, list):+ a):::slice(i, list.length, list)
     }
 
     //P22
@@ -194,7 +194,7 @@ object Problems {
         randomSelect(list.length, list)
     }
 
-    
+
 
 }
 

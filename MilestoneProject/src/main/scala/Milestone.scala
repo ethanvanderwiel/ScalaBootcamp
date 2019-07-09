@@ -1,4 +1,4 @@
-case class Result(name: String, desc: String) 
+case class Result(name: String, desc: String)
 
 case class Search(searchString: String, results: Vector[Result])
 
@@ -25,7 +25,7 @@ object Milestone {
 
     /*
     * Converts all users to a Vector that contains every search using flat map. Then, does the same as above
-    * 
+    *
     */
     def mostCommonSearchAllUsersFold(users: Vector[User]): (String, Int) = {
         val totalSearches = users flatMap (user => user.searches)
@@ -47,7 +47,7 @@ object Milestone {
     }
 
     //Testing the collections
-    def main(args: Array[String]): Unit = { 
-       
+    def main(args: Array[String]): Unit = {
+
     }
 }

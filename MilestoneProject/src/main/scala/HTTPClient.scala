@@ -17,16 +17,16 @@ import org.json4s.native.Serialization._
 import org.json4s.native.Serialization
 
 
-//I changed header to a list of headers, it can easily be a header but this makes more sense to me as 
+//I changed header to a list of headers, it can easily be a header but this makes more sense to me as
 //http4s already returned custom type Header, which was almost a list
 case class HttpResponse(header: List[String], body: String, statusCode: Int)
 trait HttpClient {
     val httpClient = Http1Client[IO]().unsafeRunSync
     implicit val formats = Serialization.formats(NoTypeHints)
-    
-    
+
+
     def executeHttpPost(url: String, values: Map[String,String]): HttpResponse = {
-        
+
         val postUri = Uri.fromString(url)
         val postRequest = POST(
             postUri.valueOr(throw _),
@@ -37,11 +37,10 @@ trait HttpClient {
         val resUnsafe = res.unsafeRunSync
         val header = resUnsafe.headers.toList.map(s => s.toString)
         val status= resUnsafe.status
-        
+
         HttpResponse(header, body.toString, status.toString.substring(0,3).toInt)
     }
     def executeHttpGet(url: String): HttpResponse = {
-        val httpClient = Http1Client[IO]().unsafeRunSync
         val getUri = Uri.fromString(url)
         val request = GET(
             getUri.valueOr(throw _)//handles potential error
@@ -51,7 +50,7 @@ trait HttpClient {
         val resUnsafe = res.unsafeRunSync
         val header = resUnsafe.headers.toList.map(s => s.toString)
         val status= resUnsafe.status
-       
+
         HttpResponse(header, body.toString, status.toString.substring(0,3).toInt)
     }
 }
