@@ -19,10 +19,39 @@ import org.json4s._
 import org.json4s.native.Serialization._
 import org.json4s.native.Serialization
 
+
 object Main extends StreamApp[IO] {
+  object q extends QueryParamDecoderMatcher[String]("q")
   val databaseService = HttpService[IO] {
   case GET -> Root / "ping" =>
     Ok("Pong")
+  case GET -> Root / "search_terms" =>
+    Ok(getSearchTerms)
+  case GET -> Root / "most_common_search" =>
+    implicit val formats = Serialization.formats(NoTypeHints)
+    val compressed = Milestone.mostCommonSearchAllUsersFold(Vector() ++ UserSearchRepository.getAll)
+    val json = ("searches" -> compressed.map {
+        term => ("term" -> term)
+      }
+    )
+    Ok(write(json))
+  case req @ POST -> Root / "most_common_search" =>
+    val response = for {
+      user <- req.as[Json]
+      resp <- Ok(user.toString)
+    } yield(resp)
+    val validatedUser = validate(response.flatMap(_.as[String]).unsafeRunSync.toString)
+    validatedUser match {
+      case Some(x) => val compressed = Vector() ++ Milestone.mostFrequentUserSearchFold(x)
+      implicit val formats = Serialization.formats(NoTypeHints)
+        val json = ("searches" -> compressed.map {
+          term => ("term" -> term)
+        }
+      )
+    Ok(write(json))
+      case None => Forbidden()
+    }
+
   case req @ POST -> Root / "create_user" =>
     val response = for {
       user <- req.as[Json]
@@ -43,17 +72,87 @@ object Main extends StreamApp[IO] {
       case Some(x) => response
       case None => Forbidden()
     }
+  case req @ POST -> Root / "search" :? q(search) =>
+    val searchString = search.toString
+    println("SEARCH STRING: " + searchString)
+    val response = for {
+      user <- req.as[Json]
+      resp <- Ok(user.toString)
+    } yield(resp)
+    val validatedUser = validate(response.flatMap(_.as[String]).unsafeRunSync.toString)
+    println(validatedUser)
+    validatedUser match {
+      case Some(x) =>
+        val results = http.fetchResults(searchString)
+        UserSearchRepository
+          .update(User(x.username, x.password,
+            x.searches :+ Search(searchString, results)))
+
+        implicit val formats = Serialization.formats(NoTypeHints)
+        Ok(write(results))
+      case None => Forbidden()
+    }
+  case req @ POST -> Root / "search_terms" =>
+  val response = for {
+      user <- req.as[Json]
+      resp <- Ok(user.toString)
+    } yield(resp)
+    val validatedUser = validate(response.flatMap(_.as[String]).unsafeRunSync.toString)
+    validatedUser match {
+      case Some(x) => val results = getUserSearchTerms(x)
+      implicit val formats = Serialization.formats(NoTypeHints)
+        Ok(results)
+      case None => Forbidden()
+    }
 
 
 
 }
   def parseNewUser(jsonString: String): Option[User] = {
+    val user = getUserFromJson(jsonString)
+    UserSearchRepository.create(User(user._1, user._2, Vector()))
+  }
+
+  def validate(jsonString: String): Option[User] = {
+    val user = getUserFromJson(jsonString)
+    val receivedUser = UserSearchRepository.get(user._1)
+    receivedUser match {
+      case Some(User(user._1, user._2, _)) => receivedUser
+      case _ => None
+    }
+  }
+
+  def getUserFromJson(jsonString: String): (String, String) = {
     val json: Json = parse(jsonString).getOrElse(Json.Null)
     val cursor: HCursor = json.hcursor
     val username = cursor.downField("username").as[String].getOrElse("null_user")
     val pass = cursor.downField("password").as[String].getOrElse("null_pass")
-    UserSearchRepository.create(User(username, pass, Vector()))
+    println(username + pass)
+    (username, pass)
   }
+
+  def getSearchTerms: String = {
+    implicit val formats = Serialization.formats(NoTypeHints)
+    val searchTerms = UserSearchRepository.getAll.flatMap((user) => user.searches).map((search) => search.searchString)
+    val compressed = searchTerms.toSet
+    val json = ("searches" -> compressed.map {
+        term => ("term" -> term)
+      }
+    )
+    write(json)
+  }
+
+  def getUserSearchTerms(user: User): String= {
+    implicit val formats = Serialization.formats(NoTypeHints)
+    val searchTerms = user.searches.map((search)=> search.searchString)
+    val compressed = searchTerms.toSet
+    val json = ("searches" -> compressed.map {
+        term => ("term" -> term)
+      }
+    )
+    write(json)
+  }
+
 
   def parseChangePassword(jsonString: String): Option[User] = {
     val json: Json = parse(jsonString).getOrElse(Json.Null)

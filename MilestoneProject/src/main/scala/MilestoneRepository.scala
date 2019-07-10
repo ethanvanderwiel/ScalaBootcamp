@@ -46,7 +46,7 @@ object UserSearchRepository extends Repository[User]{
      */
     override def update(x: User): Option[User] = get(x.username) match {
         case None => None
-        case Some(user) => delete(x)
+        case Some(user) =>  delete(x)
                             create(x)
                             Some(x)
     }

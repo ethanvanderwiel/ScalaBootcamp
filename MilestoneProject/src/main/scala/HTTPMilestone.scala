@@ -41,11 +41,19 @@ object http extends HttpClient{
 
     }
     def main(args: Array[String]) = {
-      //val userMap = Map("username" -> "user1", "password" -> "pass1")
-      val changePass = Map("username" -> "user1", "oldPassword" -> "pass1", "newPassword" -> "newPass!")
+      val userMap = Map("username" -> "user1", "password" -> "userpass1")
+      //val changePass = Map("username" -> "user1", "oldPassword" -> "newPass!", "newPassword" -> "newPass!")
       //println(executeHttpPost("http://localhost:8000/create_user", userMap ))
       //println(executeHttpGet("http://localhost:8000/ping"))
-      println(executeHttpPost("http://localhost:8000/change_password", changePass))
+      //println(executeHttpPost("http://localhost:8000/change_password", changePass))
+      // println(executeHttpPost("http://localhost:8000/create_user", userMap ))
+      // println(executeHttpPost("http://localhost:8000/search?q=cat", userMap)) //search string changed slightly to fit duck duck go and http4s standards
+      // println(executeHttpPost("http://localhost:8000/search?q=house", userMap))
+      // println(executeHttpPost("http://localhost:8000/search?q=bird", userMap))
+      //println(executeHttpGet("http://localhost:8000/search_terms"))
+      //println(executeHttpPost("http://localhost:8000/search_terms", userMap))
+      //println(executeHttpGet("http://localhost:8000/most_common_search"))
+      println(executeHttpPost("http://localhost:8000/most_common_search", userMap))
     }
 
 }

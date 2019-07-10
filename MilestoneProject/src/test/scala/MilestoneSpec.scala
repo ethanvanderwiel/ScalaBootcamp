@@ -41,14 +41,14 @@ object MilestoneSpec extends Specification {
     )
     "Most Frequent User Search Fold" should {
         "Find max user search term" in {
-            Milestone.mostFrequentUserSearchFold(userVector(8)) must beEqualTo( ("Music", 2) )
-            Milestone.mostFrequentUserSearchFold(userVector(3)) must beEqualTo( ("Examples", 2) )
+            Milestone.mostFrequentUserSearchFold(userVector(8)) must beEqualTo( Seq(("Music")) )
+            Milestone.mostFrequentUserSearchFold(userVector(3)) must beEqualTo( Seq(("Examples")) )
         }
 
     }
     "Most Frequent search across all users" should {
         "find max search term" in {
-            Milestone.mostCommonSearchAllUsersFold(userVector) must beEqualTo( ("Examples", 5) )
+            Milestone.mostCommonSearchAllUsersFold(userVector) must beEqualTo( Seq("Examples") )
         }
     }
 
