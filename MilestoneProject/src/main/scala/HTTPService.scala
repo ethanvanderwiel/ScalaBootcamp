@@ -6,10 +6,8 @@ import org.http4s.server.blaze._
 import org.http4s.implicits._
 import fs2.{Stream, StreamApp}
 import fs2.StreamApp.ExitCode
-
 import org.http4s.client.blaze._
 import org.http4s.Uri
-
 import org.http4s.client.dsl.io._
 import org.http4s.headers._
 import org.http4s.MediaType._
@@ -22,92 +20,80 @@ import org.json4s.native.Serialization
 
 object Main extends StreamApp[IO] {
   object q extends QueryParamDecoderMatcher[String]("q")
+  implicit val formats = Serialization.formats(NoTypeHints)
+
   val databaseService = HttpService[IO] {
-  case GET -> Root / "ping" =>
-    Ok("Pong")
-  case GET -> Root / "search_terms" =>
-    Ok(getSearchTerms)
-  case GET -> Root / "most_common_search" =>
-    implicit val formats = Serialization.formats(NoTypeHints)
-    val compressed = Milestone.mostCommonSearchAllUsersFold(Vector() ++ UserSearchRepository.getAll)
-    val json = ("searches" -> compressed.map {
-        term => ("term" -> term)
+    case GET -> Root / "ping" =>
+      Ok("Pong")
+
+    case GET -> Root / "search_terms" =>
+      Ok(getSearchTerms)
+
+    case GET -> Root / "most_common_search" =>
+      Ok(formatJsonForSearchTerms(Milestone.mostCommonSearchAllUsersFold(Vector() ++ UserSearchRepository.getAll).toSet))
+
+    case req @ POST -> Root / "most_common_search" =>
+      val response = for {
+        user <- req.as[Json]
+        resp <- Ok(user.toString)
+      } yield(resp)
+      val validatedUser = validate(response.flatMap(_.as[String]).unsafeRunSync.toString)
+      validatedUser match {
+        case Some(x) => Ok( formatJsonForSearchTerms(Milestone.mostFrequentUserSearchFold(x).toSet))
+        case None => Forbidden()
       }
-    )
-    Ok(write(json))
-  case req @ POST -> Root / "most_common_search" =>
+
+    case req @ POST -> Root / "create_user" =>
+      val response = for {
+        user <- req.as[Json]
+        resp <- Ok(user.toString)
+      } yield(resp)
+      val resOption = parseNewUser(response.flatMap(_.as[String]).unsafeRunSync.toString)
+      resOption match {
+        case Some(x) => response
+        case None => Forbidden()
+      }
+
+    case req @ POST -> Root / "change_password" =>
+      val response = for {
+        user <- req.as[Json]
+        resp <- Ok(user.toString)
+      } yield(resp)
+      val updateOption = parseChangePassword(response.flatMap(_.as[String]).unsafeRunSync.toString)
+      updateOption match {
+        case Some(x) => response
+        case None => Forbidden()
+      }
+
+    case req @ POST -> Root / "search" :? q(search) =>
+      val searchString = search.toString
+      val response = for {
+        user <- req.as[Json]
+        resp <- Ok(user.toString)
+      } yield(resp)
+      val validatedUser = validate(response.flatMap(_.as[String]).unsafeRunSync.toString)
+      validatedUser match {
+        case Some(x) =>
+          val results = http.fetchResults(searchString)
+          UserSearchRepository.update(User(x.username, x.password, x.searches :+ Search(searchString, results)))
+          Ok(write(results))
+        case None => Forbidden()
+      }
+
+    case req @ POST -> Root / "search_terms" =>
     val response = for {
-      user <- req.as[Json]
-      resp <- Ok(user.toString)
-    } yield(resp)
-    val validatedUser = validate(response.flatMap(_.as[String]).unsafeRunSync.toString)
-    validatedUser match {
-      case Some(x) => val compressed = Vector() ++ Milestone.mostFrequentUserSearchFold(x)
-      implicit val formats = Serialization.formats(NoTypeHints)
-        val json = ("searches" -> compressed.map {
-          term => ("term" -> term)
-        }
-      )
-    Ok(write(json))
-      case None => Forbidden()
-    }
-
-  case req @ POST -> Root / "create_user" =>
-    val response = for {
-      user <- req.as[Json]
-      resp <- Ok(user.toString)
-    } yield(resp)
-    val resOption = parseNewUser(response.flatMap(_.as[String]).unsafeRunSync.toString)
-    resOption match {
-      case Some(x) => response
-      case None => Forbidden()
-    }
-  case req @ POST -> Root / "change_password" =>
-    val response = for {
-      user <- req.as[Json]
-      resp <- Ok(user.toString)
-    } yield(resp)
-    val updateOption = parseChangePassword(response.flatMap(_.as[String]).unsafeRunSync.toString)
-    updateOption match {
-      case Some(x) => response
-      case None => Forbidden()
-    }
-  case req @ POST -> Root / "search" :? q(search) =>
-    val searchString = search.toString
-    println("SEARCH STRING: " + searchString)
-    val response = for {
-      user <- req.as[Json]
-      resp <- Ok(user.toString)
-    } yield(resp)
-    val validatedUser = validate(response.flatMap(_.as[String]).unsafeRunSync.toString)
-    println(validatedUser)
-    validatedUser match {
-      case Some(x) =>
-        val results = http.fetchResults(searchString)
-        UserSearchRepository
-          .update(User(x.username, x.password,
-            x.searches :+ Search(searchString, results)))
-
-        implicit val formats = Serialization.formats(NoTypeHints)
-        Ok(write(results))
-      case None => Forbidden()
-    }
-  case req @ POST -> Root / "search_terms" =>
-  val response = for {
-      user <- req.as[Json]
-      resp <- Ok(user.toString)
-    } yield(resp)
-    val validatedUser = validate(response.flatMap(_.as[String]).unsafeRunSync.toString)
-    validatedUser match {
-      case Some(x) => val results = getUserSearchTerms(x)
-      implicit val formats = Serialization.formats(NoTypeHints)
-        Ok(results)
-      case None => Forbidden()
-    }
+        user <- req.as[Json]
+        resp <- Ok(user.toString)
+      } yield(resp)
+      val validatedUser = validate(response.flatMap(_.as[String]).unsafeRunSync.toString)
+      validatedUser match {
+        case Some(x) => val results = getUserSearchTerms(x)
+          Ok(results)
+        case None => Forbidden()
+      }
+  }
 
 
-
-}
   def parseNewUser(jsonString: String): Option[User] = {
     val user = getUserFromJson(jsonString)
     UserSearchRepository.create(User(user._1, user._2, Vector()))
@@ -132,27 +118,23 @@ object Main extends StreamApp[IO] {
   }
 
   def getSearchTerms: String = {
-    implicit val formats = Serialization.formats(NoTypeHints)
     val searchTerms = UserSearchRepository.getAll.flatMap((user) => user.searches).map((search) => search.searchString)
-    val compressed = searchTerms.toSet
-    val json = ("searches" -> compressed.map {
-        term => ("term" -> term)
-      }
-    )
-    write(json)
+    formatJsonForSearchTerms(searchTerms.toSet)
   }
 
   def getUserSearchTerms(user: User): String= {
-    implicit val formats = Serialization.formats(NoTypeHints)
     val searchTerms = user.searches.map((search)=> search.searchString)
-    val compressed = searchTerms.toSet
+    formatJsonForSearchTerms(searchTerms.toSet)
+  }
+
+  def formatJsonForSearchTerms(compressed: Set[String]): String = {
+    implicit val formats = Serialization.formats(NoTypeHints)
     val json = ("searches" -> compressed.map {
         term => ("term" -> term)
       }
     )
     write(json)
   }
-
 
   def parseChangePassword(jsonString: String): Option[User] = {
     val json: Json = parse(jsonString).getOrElse(Json.Null)
@@ -169,6 +151,8 @@ object Main extends StreamApp[IO] {
       }
     }
   }
+
+
   override def stream(args: List[String], requestShutdown: IO[Unit]): Stream[IO, ExitCode] =
     BlazeBuilder[IO]
       .bindHttp(8000, "localhost")
