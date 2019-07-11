@@ -23,10 +23,7 @@ object UserSearchRepository extends Repository[User]{
 
     /* Gets all of the current users by accessing the json database file and parsing it */
     override def getAll: Seq[User] = {
-        val bufferedSource = Source.fromFile("database.txt")
-        val stringList = bufferedSource.getLines.mkString
-        bufferedSource.close
-        JsonReadWrite.parseUsers(stringList)
+        CirceParse.decodeAllUsers.toSeq
     }
 
     /* Gets a single user. Returns Some(user) if user exists, otherwise None */
@@ -39,7 +36,7 @@ object UserSearchRepository extends Repository[User]{
         case Some(user) => None
         case None =>val seqAdd = getAll :+ x
                     val added = Vector() ++ seqAdd
-                    JsonReadWrite.writeJson(Users(added))
+                    CirceParse.encodeAllUsers(added)
                     Some(x)
     }
 
@@ -57,7 +54,7 @@ object UserSearchRepository extends Repository[User]{
     override def delete(x: User): Option[User] = get(x.username) match {
         case None => None
         case Some(user) => val deleted = Vector() ++ getAll.filterNot((newUser: User) => (newUser.username == user.username))
-                            JsonReadWrite.writeJson(Users(deleted))
+                            CirceParse.encodeAllUsers(deleted)
                             Some(x)
 
     }
