@@ -6,6 +6,11 @@ import java.io._
 
 //This case class is to help jsonlift properly format the json
 case class Users(users: Vector[User])
+
+//Give another shot with circe
+//Create implicits of Encoder and Decoder for all types
+//Use circe generics - semi-auto
+//Make sure all nested case class have encoders and decoders
 object JsonReadWrite {
 
     /* Writes the Users object to the json database file. */

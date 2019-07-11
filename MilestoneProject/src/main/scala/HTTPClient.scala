@@ -19,6 +19,7 @@ import org.json4s.native.Serialization
 
 //I changed header to a list of headers, it can easily be a header but this makes more sense to me as
 //http4s already returned custom type Header, which was almost a list
+//Use map/flatmap/forcomps to deal with IO, open in tests
 case class HttpResponse(header: List[String], body: String, statusCode: Int)
 trait HttpClient {
     val httpClient = Http1Client[IO]().unsafeRunSync

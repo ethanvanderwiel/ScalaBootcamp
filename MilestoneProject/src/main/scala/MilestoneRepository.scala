@@ -8,7 +8,9 @@ import java.io._
 import scala.io.Source
 
 
-
+//Implement in finally tagless style and F[_]
+//Wrap all effects in IO
+//Could use doobie database
 trait Repository[A] {
   def getAll: Seq[A]
   def get(id: String): Option[A]

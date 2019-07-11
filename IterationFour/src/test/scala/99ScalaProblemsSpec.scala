@@ -52,13 +52,13 @@ object MilestoneSpec extends Specification {
             Problems.duplicateN(3, List()) must beEqualTo(List())
 
             Problems.split(3, List('a, 'b, 'c, 'd, 'e, 'f, 'g, 'h, 'i, 'j, 'k)) must beEqualTo((List('a, 'b, 'c),List('d, 'e, 'f, 'g, 'h, 'i, 'j, 'k)))
-            
+
 
             Problems.drop(3, List('a, 'b, 'c, 'd, 'e, 'f, 'g, 'h, 'i, 'j, 'k)) must beEqualTo(List('a, 'b, 'd, 'e, 'g, 'h, 'j, 'k))
-            
+
 
             Problems.slice(3, 7, List('a, 'b, 'c, 'd, 'e, 'f, 'g, 'h, 'i, 'j, 'k)) must beEqualTo(List('d, 'e, 'f, 'g))
-            
+
 
             Problems.rotate(3, List('a, 'b, 'c, 'd, 'e, 'f, 'g, 'h, 'i, 'j, 'k)) must beEqualTo(List('d, 'e, 'f, 'g, 'h, 'i, 'j, 'k, 'a, 'b, 'c))
             Problems.rotate(22, List('a, 'b, 'c, 'd, 'e, 'f, 'g, 'h, 'i, 'j, 'k)) must beEqualTo(List('a, 'b, 'c, 'd, 'e, 'f, 'g, 'h, 'i, 'j, 'k))
@@ -74,7 +74,7 @@ object MilestoneSpec extends Specification {
             Problems.insertAt('new, 0, List('a, 'b, 'c, 'd)) must beEqualTo(List('new, 'a, 'b, 'c, 'd))
 
             Problems.randomSelect(3, List('a, 'b, 'c, 'd, 'e, 'f, 'g, 'h)) must beEqualTo(List('f, 'a, 'd)) //Seeded, but usually random
-            
+
             Problems.lotto(6, 49) must beEqualTo(List(46, 46, 29, 0, 6, 13)) //Seeded, but usually random
 
             Problems.randomPermute(List('a, 'b, 'c, 'd, 'e, 'f)) must beEqualTo(List('d, 'e, 'b, 'c, 'a, 'f)) //Seeded, but usually random
