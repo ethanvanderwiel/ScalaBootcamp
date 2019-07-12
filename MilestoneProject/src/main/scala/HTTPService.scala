@@ -16,12 +16,15 @@ import io.circe.literal._
 import org.json4s._
 import org.json4s.native.Serialization._
 import org.json4s.native.Serialization
+import org.http4s.headers.`Content-Type`
+
+
+
 
 
 object Main extends StreamApp[IO] {
   object q extends QueryParamDecoderMatcher[String]("q")
   implicit val formats = Serialization.formats(NoTypeHints)
-
   val databaseService = HttpService[IO] {
     case GET -> Root / "ping" =>
       Ok("Pong")
@@ -29,8 +32,6 @@ object Main extends StreamApp[IO] {
     case GET -> Root / "search_terms" =>
       Ok(getSearchTerms)
 
-    case GET -> Root / "most_common_search" =>
-      Ok(formatJsonForSearchTerms(Milestone.mostCommonSearchAllUsersFold(Vector() ++ UserSearchRepository.getAll).toSet))
 
     case req @ POST -> Root / "most_common_search" =>
       val response = for {
@@ -113,7 +114,6 @@ object Main extends StreamApp[IO] {
     val cursor: HCursor = json.hcursor
     val username = cursor.downField("username").as[String].getOrElse("null_user")
     val pass = cursor.downField("password").as[String].getOrElse("null_pass")
-    println(username + pass)
     (username, pass)
   }
 
