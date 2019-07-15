@@ -25,6 +25,7 @@ import org.http4s.headers.`Content-Type`
 object Main extends StreamApp[IO] {
   object q extends QueryParamDecoderMatcher[String]("q")
   implicit val formats = Serialization.formats(NoTypeHints)
+
   val databaseService = HttpService[IO] {
     case GET -> Root / "ping" =>
       Ok("Pong")

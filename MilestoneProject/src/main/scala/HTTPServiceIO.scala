@@ -23,8 +23,11 @@ import cats.data._
 
 
 case class UserCreds(username: String, password: String)
+case class ChangePassword(username: String, oldPassword: String, newPassword: String)
 
 object IOMain extends StreamApp[IO] {
+  object q extends QueryParamDecoderMatcher[String]("q")
+
   implicit val resultDecoder: Decoder[Result] = deriveDecoder[Result]
   implicit val resultEncoder: Encoder[Result] = deriveEncoder[Result]
 
@@ -36,6 +39,9 @@ object IOMain extends StreamApp[IO] {
 
   implicit val userCredsDecoder: Decoder[UserCreds] = deriveDecoder[UserCreds]
   implicit val userCredsEncoder: Encoder[UserCreds] = deriveEncoder[UserCreds]
+
+  implicit val changePassDecoder: Decoder[ChangePassword] = deriveDecoder[ChangePassword]
+  implicit val changePassEncoder: Encoder[ChangePassword] = deriveEncoder[ChangePassword]
 
   implicit val resultEntityDecoder: EntityDecoder[IO, Result] = jsonOf
   implicit val resultEntityEncoder: EntityEncoder[IO, Result] = jsonEncoderOf
@@ -49,15 +55,36 @@ object IOMain extends StreamApp[IO] {
   implicit val userCredsEntityDecoder: EntityDecoder[IO, UserCreds] = jsonOf
   implicit val userCredsEntityEncoder: EntityEncoder[IO, UserCreds] = jsonEncoderOf
 
+  implicit val changePassEntityDecoder: EntityDecoder[IO, ChangePassword] = jsonOf
+  implicit val changePassEntityEncoder: EntityEncoder[IO, ChangePassword] = jsonEncoderOf
+
 
   val databaseService = HttpService[IO] {
     case GET -> Root / "ping" =>
       Ok("Pong")
 
     case req @ POST -> Root / "verify_user_cred" =>
-      val user = req.as[UserCreds]
-      val validation = validateUser(user)
-      validation
+      validateUser(req.as[UserCreds])
+
+    case req @ POST -> Root / "create_user" =>
+      createUser(req.as[UserCreds])
+
+    case req @ POST -> Root / "change_password" =>
+      changePassword(req.as[ChangePassword])
+
+    case req @ POST -> Root / "search" :? q(search) =>
+      validateUser(req.as[UserCreds]).flatMap {
+        (validation) => {
+          validation match {
+            case Ok(x) => val results = http.fetchResultsIO(searchString)
+
+            case None => Forbidden()
+          }
+        }
+      }
+
+
+
   }
 
   def validateUser(user: IO[UserCreds]): IO[Response[IO]] = {
@@ -71,6 +98,35 @@ object IOMain extends StreamApp[IO] {
     }
   }
 
+  def createUser(user: IO[UserCreds]): IO[Response[IO]] = {
+    user.flatMap {
+      (u) => {
+        UserSearchRepository.get(u.username) match {
+          case Some(x) => Forbidden()
+          case None => val newUser = User(u.username, u.password, Vector())
+            UserSearchRepository.create(newUser)
+            Ok(newUser)
+        }
+      }
+    }
+  }
+
+  def changePassword(user: IO[ChangePassword]): IO[Response[IO]] = {
+    user.flatMap {
+      (u) => {
+        UserSearchRepository.get(u.username) match {
+          case None => Forbidden()
+          case Some(User(_, u.newPassword, _)) => Forbidden()
+          case Some(User(name, u.oldPassword, searches)) =>
+            UserSearchRepository.update(User(name, u.newPassword, searches)) match {
+              case None => Forbidden()
+              case Some(x) => Ok(x)
+          }
+          case Some(User(_, _, _)) => Forbidden()
+        }
+      }
+    }
+  }
 
 
   override def stream(args: List[String], requestShutdown: IO[Unit]): Stream[IO, ExitCode] =
