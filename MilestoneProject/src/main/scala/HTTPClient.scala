@@ -26,6 +26,7 @@ import io.circe.generic.semiauto._
 case class HttpResponse(header: List[String], body: String, statusCode: Int)
 trait HttpClient{
     val httpClient = Http1Client[IO]().unsafeRunSync
+    val httpClientIO = Http1Client[IO]()
     implicit val formats = Serialization.formats(NoTypeHints)
 
 
@@ -50,6 +51,7 @@ trait HttpClient{
         val request = GET(
             getUri.valueOr(throw _)//handles potential error
         )
+
         val res = Ok(httpClient.expect[String](request).unsafeRunSync)
         val body = res.flatMap(_.as[String])
         val resUnsafe = res.unsafeRunSync
@@ -78,9 +80,14 @@ trait HttpClient{
       val request = GET(
         Uri.fromString(url).valueOr(throw _)
       )
+      val resIO = Ok(httpClientIO.flatMap {
+          (client) => {
+            client.expect[String](request)
+          }
+        })
       val res = Ok(httpClient.expect[String](request))
       for {
-        response <- res
+        response <- resIO
         body <- response.as[String]
       } yield HttpResponse(response.headers.toList.map(s => s.toString),
                    body, response.status.toString.substring(0,3).toInt)

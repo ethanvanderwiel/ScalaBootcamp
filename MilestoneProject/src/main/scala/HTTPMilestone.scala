@@ -1,5 +1,6 @@
 import io.circe._, io.circe.parser._
 import cats.syntax.either._
+import cats.effect._
 
 
 object http extends HttpClient{

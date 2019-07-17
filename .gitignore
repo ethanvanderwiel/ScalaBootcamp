@@ -20,3 +20,7 @@ project/plugins/project/
 
 # Mac Filesytem
 .DS_Store
+
+# Metals
+.metals/
+.bloop/
