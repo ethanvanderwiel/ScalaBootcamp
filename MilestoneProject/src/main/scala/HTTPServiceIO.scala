@@ -72,19 +72,32 @@ object IOMain extends StreamApp[IO] {
     case req @ POST -> Root / "change_password" =>
       changePassword(req.as[ChangePassword])
 
-    case req @ POST -> Root / "search" :? q(search) =>
-      validateUser(req.as[UserCreds]).flatMap {
+    case req @ POST -> Root / "search" :? q(searchString) =>
+      val user = req.as[UserCreds]
+      validateUser(user).flatMap {
         (validation) => {
           validation match {
-            case Ok(x) => val results = http.fetchResultsIO(searchString)
-
-            case None => Forbidden()
+            case Ok(x) =>
+              val resultsIO: IO[Vector[Result]] = http.fetchResultsIO(searchString)
+              user.flatMap {
+                  (u) => {
+                    UserSearchRepository.get(u.username) match {
+                      case Some(x@User(username, password, searches)) =>
+                        resultsIO flatMap {
+                          (results) => {
+                            val newSearch: Search = Search(searchString, results)
+                            UserSearchRepository.update(User(username, password, searches :+ newSearch))
+                            Ok(newSearch)
+                          }
+                        }
+                      case _ => Forbidden()
+                    }
+                  }
+                }
+            case _ => Forbidden()
           }
         }
       }
-
-
-
   }
 
   def validateUser(user: IO[UserCreds]): IO[Response[IO]] = {

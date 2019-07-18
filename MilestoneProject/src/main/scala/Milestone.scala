@@ -42,13 +42,6 @@ object Milestone {
         mostSeq.map((tup: (String, Int)) => tup._1)
     }
 
-    /*
-    * Method made purely for fun/setting up the testing quicker. Doc wanted 10 users, which would take forever to make by hand
-    * using the old method. Also provided more practice with for comprehension, Vectors, tuples, etc
-    */
-    def makeSearch(searches: Vector[String]): Vector[Search] = {
-        searches.map((searchString) => Search(searchString, http.fetchResults(searchString)))
-    }
 
 
 }

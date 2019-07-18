@@ -1,8 +1,0 @@
-[
-  {
-    "username" : "user1",
-    "password" : "newuserpass1",
-    "searches" : [
-    ]
-  }
-]
