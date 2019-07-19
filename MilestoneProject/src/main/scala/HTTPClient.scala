@@ -63,7 +63,7 @@ trait HttpClient {
 
   def main(args: Array[String]) = {
     val user1      = Map("username" -> "user1", "password"    -> "userpass1")
-    val changePass = Map("username" -> "user1", "oldPassword" -> "userpass1", "newPassword" -> "newuserpass1")
+    val changePass = Map("username" -> "user1", "oldPassword" -> "userpass1", "newPassword" -> "neweruserpass1")
 
     val user2 = Map("username" -> "user2", "password" -> "userpass2")
     val user3 = Map("username" -> "user3", "password" -> "userpass3")
@@ -73,9 +73,9 @@ trait HttpClient {
     // executeHttpPostIO("http://localhost:9000/create_user", user1).unsafeRunSync
     // executeHttpPostIO("http://localhost:9000/create_user", user2).unsafeRunSync
     // executeHttpPostIO("http://localhost:9000/create_user", user3).unsafeRunSync
-    //println(executeHttpPostIO("http://localhost:9000/change_password", changePass).unsafeRunSync)
+    println(executeHttpPostIO("http://localhost:9000/change_password", changePass).unsafeRunSync)
     // executeHttpPostIO("http://localhost:9000/search?q=cat", user1).unsafeRunSync
-    executeHttpPostIO("http://localhost:9000/search?q=cat", user1).unsafeRunSync
+    //executeHttpPostIO("http://localhost:9000/search?q=cat", user1).unsafeRunSync
     // executeHttpPostIO("http://localhost:9000/search?q=dog", user1).unsafeRunSync
     // executeHttpPostIO("http://localhost:9000/search?q=house", user2).unsafeRunSync
     // executeHttpPostIO("http://localhost:9000/search?q=cat", user2).unsafeRunSync

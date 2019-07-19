@@ -133,6 +133,23 @@
             "desc" : "A CT scan, also known as computed tomography scan, makes use of computer-processed combinations..."
           }
         ]
+      },
+      {
+        "searchString" : "cat",
+        "results" : [
+          {
+            "name" : "Cat",
+            "desc" : " A small, typically furry, carnivorous mammal. They are often called house cats when kept as..."
+          },
+          {
+            "name" : "Cat Stevens",
+            "desc" : "A British singer-songwriter and multi-instrumentalist."
+          },
+          {
+            "name" : "Computed axial tomography",
+            "desc" : "A CT scan, also known as computed tomography scan, makes use of computer-processed combinations..."
+          }
+        ]
       }
     ]
   }

@@ -176,10 +176,9 @@ object IOMain extends StreamApp[IO] {
     user.flatMap { (u) =>
       {
         UserSearchRepository.get(u.username) match {
-          case None                                      => Forbidden()
           case Some(User(_, u.newPassword, _))           => Forbidden()
           case Some(User(name, u.oldPassword, searches)) => updatePass(User(name, u.newPassword, searches))
-          case Some(User(_, _, _))                       => Forbidden()
+          case _                                         => Forbidden()
         }
       }
     }
@@ -187,7 +186,7 @@ object IOMain extends StreamApp[IO] {
 
   def updatePass(user: User): IO[Response[IO]] = {
     UserSearchRepository.update(User(user.username, user.password, user.searches)) match {
-      case None    => Forbidden()
+      case None    => println("why"); Forbidden()
       case Some(x) => Ok(user)
     }
   }
