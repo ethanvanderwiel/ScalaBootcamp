@@ -34,4 +34,4 @@ val json4sJackson = "org.json4s" %% "json4s-jackson" % "3.6.7"
 version := "1.0"
 
 
-scalaVersion := "2.11.0"
+scalaVersion := "2.11.12"
