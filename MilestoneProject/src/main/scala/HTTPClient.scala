@@ -20,9 +20,6 @@ import io.circe.generic.semiauto._
 import io.circe.parser._, io.circe.syntax._
 import scala.annotation.unspecialized
 
-//I changed header to a list of headers, it can easily be a header but this makes more sense to me as
-//http4s already returned custom type Header, which was almost a list
-//Use map/flatmap/forcomps to deal with IO, open in tests
 case class HttpResponse(header: List[String], body: String, statusCode: Int)
 
 trait HttpClient {
@@ -59,31 +56,6 @@ trait HttpClient {
           )
       }
     }
-  }
-
-  def main(args: Array[String]) = {
-    val user1      = Map("username" -> "user1", "password"    -> "userpass1")
-    val changePass = Map("username" -> "user1", "oldPassword" -> "userpass1", "newPassword" -> "neweruserpass1")
-
-    val user2 = Map("username" -> "user2", "password" -> "userpass2")
-    val user3 = Map("username" -> "user3", "password" -> "userpass3")
-
-    //println(executeHttpPostIO("http://localhost:9000/verify_user_cred", newUser).unsafeRunSync)
-    println(executeHttpGetIO("http://localhost:9000/ping").unsafeRunSync)
-    // executeHttpPostIO("http://localhost:9000/create_user", user1).unsafeRunSync
-    // executeHttpPostIO("http://localhost:9000/create_user", user2).unsafeRunSync
-    // executeHttpPostIO("http://localhost:9000/create_user", user3).unsafeRunSync
-    println(executeHttpPostIO("http://localhost:9000/change_password", changePass).unsafeRunSync)
-    // executeHttpPostIO("http://localhost:9000/search?q=cat", user1).unsafeRunSync
-    //executeHttpPostIO("http://localhost:9000/search?q=cat", user1).unsafeRunSync
-    // executeHttpPostIO("http://localhost:9000/search?q=dog", user1).unsafeRunSync
-    // executeHttpPostIO("http://localhost:9000/search?q=house", user2).unsafeRunSync
-    // executeHttpPostIO("http://localhost:9000/search?q=cat", user2).unsafeRunSync
-    // executeHttpPostIO("http://localhost:9000/search?q=mouse", user3).unsafeRunSync
-    // println(executeHttpGetIO("http://localhost:9000/search_terms").unsafeRunSync)
-    println(executeHttpPostIO("http://localhost:9000/search_terms", user1).unsafeRunSync)
-    println(executeHttpPostIO("http://localhost:9000/most_common_search", user1).unsafeRunSync)
-    println(executeHttpGetIO("http://localhost:9000/most_common_search").unsafeRunSync)
   }
 
 }

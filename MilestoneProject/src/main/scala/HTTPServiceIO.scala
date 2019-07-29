@@ -71,6 +71,11 @@ object IOMain extends StreamApp[IO] {
     case req @ POST -> Root / "change_password" =>
       checkPassToUpdate(req.as[ChangePassword])
 
+    /*
+    * Gets all users, flat maps their searches into a list, maps the search strings
+    * from that list into a new list, turns the list into a set
+    * to remove duplicates
+    */
     case GET -> Root / "search_terms" =>
       val searchTermsSet = UserSearchRepository.getAll
         .flatMap((user) => user.searches)
@@ -78,6 +83,12 @@ object IOMain extends StreamApp[IO] {
         .toSet
       Ok(searchTermsSet.asJson)
 
+    /*
+    * Validates user credentials. Flat maps validated userIO
+    * to confirm or deny authorization.
+    * If confirmed, flat maps confirmed user to get user information,
+    * maps user searches into search strings, then into a set to remove dupes
+    */
     case req @ POST -> Root / "search_terms" =>
       val user = req.as[UserCreds]
       validateUser(user).flatMap { (validation) =>
@@ -98,9 +109,18 @@ object IOMain extends StreamApp[IO] {
         }
       }
 
+    /*
+    * Returns most common search as json
+    */
     case GET -> Root / "most_common_search" =>
       Ok(Milestone.mostCommonSearchAllUsersFold(Vector() ++ UserSearchRepository.getAll).asJson)
 
+    /*
+    * Validates user.
+    * flatmaps user data, gets user from repo, returns
+    * most frequent search on that user. Turns into set
+    * to remove dupes and json for output
+    */
     case req @ POST -> Root / "most_common_search" =>
       val user = req.as[UserCreds]
       validateUser(user).flatMap { validation =>
@@ -119,6 +139,12 @@ object IOMain extends StreamApp[IO] {
         }
       }
 
+    /*
+    * Validates user.
+    * Fetches result from search string.
+    * Maps user data, gets user from repo, and updates
+    * the user searches with the new search and results
+    */
     case req @ POST -> Root / "search" :? q(searchString) =>
       val user = req.as[UserCreds]
       validateUser(user).flatMap { (validation) =>
@@ -147,6 +173,10 @@ object IOMain extends StreamApp[IO] {
       }
   }
 
+  /*
+  * Helper method to validaate user. Takes in an IO of userCreds,
+  * maps it, and checks the repo for a matching username/password pair
+  */
   def validateUser(user: IO[UserCreds]): IO[Response[IO]] = {
     user.flatMap { (u) =>
       {
@@ -158,6 +188,11 @@ object IOMain extends StreamApp[IO] {
     }
   }
 
+  /*
+  * Creates a new user. Checks if username already exists,
+  * if not, creates a new user with matching username and
+  * password and an empty search vector.
+  */
   def createUser(user: IO[UserCreds]): IO[Response[IO]] = {
     user.flatMap { (u) =>
       {
@@ -172,6 +207,11 @@ object IOMain extends StreamApp[IO] {
     }
   }
 
+  /*
+  * Helper method to check and update password.
+  * Checks if the new password is unique and
+  * if the old password matches, then calls update password
+  */
   def checkPassToUpdate(user: IO[ChangePassword]): IO[Response[IO]] = {
     user.flatMap { (u) =>
       {
@@ -184,9 +224,12 @@ object IOMain extends StreamApp[IO] {
     }
   }
 
+  /*
+  * Updates the password using repo
+  */
   def updatePass(user: User): IO[Response[IO]] = {
     UserSearchRepository.update(User(user.username, user.password, user.searches)) match {
-      case None    => println("why"); Forbidden()
+      case None    => Forbidden()
       case Some(x) => Ok(user)
     }
   }

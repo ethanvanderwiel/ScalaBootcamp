@@ -1,8 +1,25 @@
 [
   {
-    "username" : "user2",
-    "password" : "userpass2",
+    "username" : "user1",
+    "password" : "pass1",
     "searches" : [
+      {
+        "searchString" : "cat",
+        "results" : [
+          {
+            "name" : "Cat",
+            "desc" : " A small, typically furry, carnivorous mammal. They are often called house cats when kept as..."
+          },
+          {
+            "name" : "Cat Stevens",
+            "desc" : "A British singer-songwriter and multi-instrumentalist."
+          },
+          {
+            "name" : "Computed axial tomography",
+            "desc" : "A CT scan, also known as computed tomography scan, makes use of computer-processed combinations..."
+          }
+        ]
+      },
       {
         "searchString" : "house",
         "results" : [
@@ -21,82 +38,42 @@
         ]
       },
       {
-        "searchString" : "cat",
+        "searchString" : "house",
         "results" : [
           {
-            "name" : "Cat",
-            "desc" : " A small, typically furry, carnivorous mammal. They are often called house cats when kept as..."
+            "name" : "House",
+            "desc" : "A building that functions as a home."
           },
           {
-            "name" : "Cat Stevens",
-            "desc" : "A British singer-songwriter and multi-instrumentalist."
+            "name" : "House (TV series)",
+            "desc" : "An American television medical drama that originally ran on the Fox network for eight seasons..."
           },
           {
-            "name" : "Computed axial tomography",
-            "desc" : "A CT scan, also known as computed tomography scan, makes use of computer-processed combinations..."
+            "name" : "House music",
+            "desc" : "A genre of electronic dance music created by club DJs and music producers in Chicago in the early..."
           }
         ]
       }
     ]
   },
   {
-    "username" : "user3",
-    "password" : "userpass3",
+    "username" : "user2",
+    "password" : "pass2",
     "searches" : [
       {
-        "searchString" : "mouse",
+        "searchString" : "bird",
         "results" : [
           {
-            "name" : "Mouse",
-            "desc" : "A small rodent characteristically having a pointed snout, small rounded ears, a body-length scaly..."
+            "name" : "Bird",
+            "desc" : "A group of endothermic vertebrates, characterised by feathers, toothless beaked jaws, the laying..."
           },
           {
-            "name" : "Computer mouse",
-            "desc" : "A hand-held pointing device that detects two-dimensional motion relative to a surface."
+            "name" : "Birds in the Trap Sing McKnight",
+            "desc" : " The second studio album by American rapper Travis Scott."
           },
           {
-            "name" : "Wood mouse",
-            "desc" : "A common murid rodent from Europe and northwestern Africa."
-          }
-        ]
-      }
-    ]
-  },
-  {
-    "username" : "user1",
-    "password" : "userpass1",
-    "searches" : [
-      {
-        "searchString" : "cat",
-        "results" : [
-          {
-            "name" : "Cat",
-            "desc" : " A small, typically furry, carnivorous mammal. They are often called house cats when kept as..."
-          },
-          {
-            "name" : "Cat Stevens",
-            "desc" : "A British singer-songwriter and multi-instrumentalist."
-          },
-          {
-            "name" : "Computed axial tomography",
-            "desc" : "A CT scan, also known as computed tomography scan, makes use of computer-processed combinations..."
-          }
-        ]
-      },
-      {
-        "searchString" : "dog",
-        "results" : [
-          {
-            "name" : "Dog",
-            "desc" : "A member of the genus Canis, which forms part of the wolf-like canids, and is the most widely..."
-          },
-          {
-            "name" : "Hot dog",
-            "desc" : "A cooked sausage, traditionally grilled or steamed and served in a partially sliced bun."
-          },
-          {
-            "name" : "Raccoon dog",
-            "desc" : "A canid indigenous to East Asia. It is the only extant species in the genus Nyctereutes."
+            "name" : "The Byrds",
+            "desc" : "An American rock band, formed in Los Angeles, California in 1964."
           }
         ]
       },
@@ -118,36 +95,19 @@
         ]
       },
       {
-        "searchString" : "cat",
+        "searchString" : "house",
         "results" : [
           {
-            "name" : "Cat",
-            "desc" : " A small, typically furry, carnivorous mammal. They are often called house cats when kept as..."
+            "name" : "House",
+            "desc" : "A building that functions as a home."
           },
           {
-            "name" : "Cat Stevens",
-            "desc" : "A British singer-songwriter and multi-instrumentalist."
+            "name" : "House (TV series)",
+            "desc" : "An American television medical drama that originally ran on the Fox network for eight seasons..."
           },
           {
-            "name" : "Computed axial tomography",
-            "desc" : "A CT scan, also known as computed tomography scan, makes use of computer-processed combinations..."
-          }
-        ]
-      },
-      {
-        "searchString" : "cat",
-        "results" : [
-          {
-            "name" : "Cat",
-            "desc" : " A small, typically furry, carnivorous mammal. They are often called house cats when kept as..."
-          },
-          {
-            "name" : "Cat Stevens",
-            "desc" : "A British singer-songwriter and multi-instrumentalist."
-          },
-          {
-            "name" : "Computed axial tomography",
-            "desc" : "A CT scan, also known as computed tomography scan, makes use of computer-processed combinations..."
+            "name" : "House music",
+            "desc" : "A genre of electronic dance music created by club DJs and music producers in Chicago in the early..."
           }
         ]
       }
