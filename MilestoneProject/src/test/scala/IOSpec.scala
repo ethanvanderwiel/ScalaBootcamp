@@ -2,7 +2,6 @@ import org.specs2.mutable.Specification
 import org.specs2.specification.BeforeAfterEach
 import org.specs2.specification.BeforeEach
 
-//Need to replace comments with what they should be. Guide isn't clear on what it means (xxx should {xxx in {...}})
 object IOSpec extends Specification with HttpClient {
   sequential
   lazy val searchVector = Vector(
@@ -59,8 +58,8 @@ object IOSpec extends Specification with HttpClient {
     }
     "search_terms GET" in {
       UserSearchRepository.clear
-      val newUser = Map("username"-> "user1", "password" -> "pass1")
-      val newUser2 = Map("username"-> "user2", "password" -> "pass2")
+      val newUser  = Map("username" -> "user1", "password" -> "pass1")
+      val newUser2 = Map("username" -> "user2", "password" -> "pass2")
       executeHttpPostIO("http://localhost:9000/create_user", newUser).unsafeRunSync
       executeHttpPostIO("http://localhost:9000/create_user", newUser2).unsafeRunSync
 
@@ -69,70 +68,71 @@ object IOSpec extends Specification with HttpClient {
       executeHttpPostIO("http://localhost:9000/search?q=bird", newUser2).unsafeRunSync
       executeHttpGetIO("http://localhost:9000/search_terms").unsafeRunSync.body must beEqualTo(
         """["cat","house","bird"]"""
-        )
+      )
     }
-      "search_terms POST" in {
-        UserSearchRepository.clear
-        val newUser = Map("username"-> "user1", "password" -> "pass1")
-        val newUser2 = Map("username"-> "user2", "password" -> "pass2")
-        executeHttpPostIO("http://localhost:9000/create_user", newUser).unsafeRunSync
-        executeHttpPostIO("http://localhost:9000/create_user", newUser2).unsafeRunSync
+    "search_terms POST" in {
+      UserSearchRepository.clear
+      val newUser  = Map("username" -> "user1", "password" -> "pass1")
+      val newUser2 = Map("username" -> "user2", "password" -> "pass2")
+      executeHttpPostIO("http://localhost:9000/create_user", newUser).unsafeRunSync
+      executeHttpPostIO("http://localhost:9000/create_user", newUser2).unsafeRunSync
 
-        executeHttpPostIO("http://localhost:9000/search?q=cat", newUser).unsafeRunSync //search string changed slightly to fit duck duck go and http4s standards
-        executeHttpPostIO("http://localhost:9000/search?q=house", newUser).unsafeRunSync
-        executeHttpPostIO("http://localhost:9000/search?q=bird", newUser2).unsafeRunSync
-        executeHttpPostIO("http://localhost:9000/search_terms", newUser).unsafeRunSync.body must beEqualTo(
-          """["cat","house"]"""
-          )
-      }
+      executeHttpPostIO("http://localhost:9000/search?q=cat", newUser).unsafeRunSync //search string changed slightly to fit duck duck go and http4s standards
+      executeHttpPostIO("http://localhost:9000/search?q=house", newUser).unsafeRunSync
+      executeHttpPostIO("http://localhost:9000/search?q=bird", newUser2).unsafeRunSync
+      executeHttpPostIO("http://localhost:9000/search_terms", newUser).unsafeRunSync.body must beEqualTo(
+        """["cat","house"]"""
+      )
+    }
 
-      "most_common_search GET" in {
-        UserSearchRepository.clear
-        val newUser = Map("username"-> "user1", "password" -> "pass1")
-        val newUser2 = Map("username"-> "user2", "password" -> "pass2")
-        executeHttpPostIO("http://localhost:9000/create_user", newUser).unsafeRunSync
-        executeHttpPostIO("http://localhost:9000/create_user", newUser2).unsafeRunSync
+    "most_common_search GET" in {
+      UserSearchRepository.clear
+      val newUser  = Map("username" -> "user1", "password" -> "pass1")
+      val newUser2 = Map("username" -> "user2", "password" -> "pass2")
+      executeHttpPostIO("http://localhost:9000/create_user", newUser).unsafeRunSync
+      executeHttpPostIO("http://localhost:9000/create_user", newUser2).unsafeRunSync
 
-        executeHttpPostIO("http://localhost:9000/search?q=cat", newUser).unsafeRunSync //search string changed slightly to fit duck duck go and http4s standards
-        executeHttpPostIO("http://localhost:9000/search?q=house", newUser).unsafeRunSync
-        executeHttpPostIO("http://localhost:9000/search?q=bird", newUser2).unsafeRunSync
-        executeHttpPostIO("http://localhost:9000/search?q=cat", newUser2).unsafeRunSync
-        executeHttpGetIO("http://localhost:9000/most_common_search").unsafeRunSync.body must beEqualTo(
-          """["cat"]"""
-          )
-      }
-      "multi most_common_search GET" in {
-        UserSearchRepository.clear
-        val newUser = Map("username"-> "user1", "password" -> "pass1")
-        val newUser2 = Map("username"-> "user2", "password" -> "pass2")
-        executeHttpPostIO("http://localhost:9000/create_user", newUser).unsafeRunSync
-        executeHttpPostIO("http://localhost:9000/create_user", newUser2).unsafeRunSync
+      executeHttpPostIO("http://localhost:9000/search?q=cat", newUser).unsafeRunSync //search string changed slightly to fit duck duck go and http4s standards
+      executeHttpPostIO("http://localhost:9000/search?q=house", newUser).unsafeRunSync
+      executeHttpPostIO("http://localhost:9000/search?q=bird", newUser2).unsafeRunSync
+      executeHttpPostIO("http://localhost:9000/search?q=cat", newUser2).unsafeRunSync
+      executeHttpGetIO("http://localhost:9000/most_common_search").unsafeRunSync.body must beEqualTo(
+        """["cat"]"""
+      )
+    }
+    "multi most_common_search GET" in {
+      UserSearchRepository.clear
+      val newUser  = Map("username" -> "user1", "password" -> "pass1")
+      val newUser2 = Map("username" -> "user2", "password" -> "pass2")
+      executeHttpPostIO("http://localhost:9000/create_user", newUser).unsafeRunSync
+      executeHttpPostIO("http://localhost:9000/create_user", newUser2).unsafeRunSync
 
-        executeHttpPostIO("http://localhost:9000/search?q=cat", newUser).unsafeRunSync //search string changed slightly to fit duck duck go and http4s standards
-        executeHttpPostIO("http://localhost:9000/search?q=house", newUser).unsafeRunSync
-        executeHttpPostIO("http://localhost:9000/search?q=bird", newUser2).unsafeRunSync
-        executeHttpPostIO("http://localhost:9000/search?q=cat", newUser2).unsafeRunSync
-        executeHttpPostIO("http://localhost:9000/search?q=house", newUser2).unsafeRunSync
-        executeHttpGetIO("http://localhost:9000/most_common_search").unsafeRunSync.body must beEqualTo(
-          """["cat","house"]"""
-          )
-      }
-      "most_common_search POST" in {
-        UserSearchRepository.clear
-        val newUser = Map("username"-> "user1", "password" -> "pass1")
-        val newUser2 = Map("username"-> "user2", "password" -> "pass2")
-        executeHttpPostIO("http://localhost:9000/create_user", newUser).unsafeRunSync
-        executeHttpPostIO("http://localhost:9000/create_user", newUser2).unsafeRunSync
+      executeHttpPostIO("http://localhost:9000/search?q=cat", newUser).unsafeRunSync //search string changed slightly to fit duck duck go and http4s standards
+      executeHttpPostIO("http://localhost:9000/search?q=house", newUser).unsafeRunSync
+      executeHttpPostIO("http://localhost:9000/search?q=bird", newUser2).unsafeRunSync
+      executeHttpPostIO("http://localhost:9000/search?q=cat", newUser2).unsafeRunSync
+      executeHttpPostIO("http://localhost:9000/search?q=house", newUser2).unsafeRunSync
+      executeHttpGetIO("http://localhost:9000/most_common_search").unsafeRunSync.body must beEqualTo(
+        """["cat","house"]"""
+      )
+    }
+    "most_common_search POST" in {
+      UserSearchRepository.clear
+      val newUser  = Map("username" -> "user1", "password" -> "pass1")
+      val newUser2 = Map("username" -> "user2", "password" -> "pass2")
+      executeHttpPostIO("http://localhost:9000/create_user", newUser).unsafeRunSync
+      executeHttpPostIO("http://localhost:9000/create_user", newUser2).unsafeRunSync
 
-        executeHttpPostIO("http://localhost:9000/search?q=cat", newUser).unsafeRunSync //search string changed slightly to fit duck duck go and http4s standards
-        executeHttpPostIO("http://localhost:9000/search?q=house", newUser).unsafeRunSync
-        executeHttpPostIO("http://localhost:9000/search?q=house", newUser).unsafeRunSync
-        executeHttpPostIO("http://localhost:9000/search?q=bird", newUser2).unsafeRunSync
-        executeHttpPostIO("http://localhost:9000/search?q=cat", newUser2).unsafeRunSync
-        executeHttpPostIO("http://localhost:9000/search?q=house", newUser2).unsafeRunSync
+      executeHttpPostIO("http://localhost:9000/search?q=cat", newUser).unsafeRunSync //search string changed slightly to fit duck duck go and http4s standards
+      executeHttpPostIO("http://localhost:9000/search?q=house", newUser).unsafeRunSync
+      executeHttpPostIO("http://localhost:9000/search?q=house", newUser).unsafeRunSync
+      executeHttpPostIO("http://localhost:9000/search?q=bird", newUser2).unsafeRunSync
+      executeHttpPostIO("http://localhost:9000/search?q=cat", newUser2).unsafeRunSync
+      executeHttpPostIO("http://localhost:9000/search?q=house", newUser2).unsafeRunSync
 
-        executeHttpPostIO("http://localhost:9000/most_common_search", newUser).unsafeRunSync.body must beEqualTo(
-          """["house"]""")
+      executeHttpPostIO("http://localhost:9000/most_common_search", newUser).unsafeRunSync.body must beEqualTo(
+        """["house"]"""
+      )
 
     }
   }
