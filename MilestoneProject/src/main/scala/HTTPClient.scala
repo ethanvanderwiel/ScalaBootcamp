@@ -19,43 +19,46 @@ import cats.data._
 import io.circe.generic.semiauto._
 import io.circe.parser._, io.circe.syntax._
 import scala.annotation.unspecialized
+import org.http4s.client._
+import org.http4s.client
 
 case class HttpResponse(header: List[String], body: String, statusCode: Int)
 
-trait HttpClient {
+trait HttpClient[F[_]] {
+  def executeHttpPostIO(url: String, values: Map[String, String]): F[HttpResponse]
+  def executeHttpGetIO(url: String): F[HttpResponse]
+}
 
-  val httpClientIO = Http1Client[IO]()
+object HttpClient {
+  def impl(httpClientIO: IO[Client[IO]]): HttpClient[IO] =
+    new HttpClient[IO] {
+      override def executeHttpPostIO(url: String, values: Map[String, String]): IO[HttpResponse] = {
+        val postRequest = POST(
+          Uri.fromString(url).valueOr(throw _),
+          values.asJson
+        )
+        makeReq(postRequest)
+      }
 
-  def executeHttpPostIO(url: String, values: Map[String, String]): IO[HttpResponse] = {
-    val postRequest = POST(
-      Uri.fromString(url).valueOr(throw _),
-      values.asJson
-    )
-    makeReq(postRequest)
-  }
+      override def executeHttpGetIO(url: String): IO[HttpResponse] =
+        makeReq(GET(Uri.fromString(url).valueOr(throw _)))
 
-  def executeHttpGetIO(url: String): IO[HttpResponse] = {
-    val request = GET(
-      Uri.fromString(url).valueOr(throw _)
-    )
-    makeReq(request)
-  }
-
-  def makeReq(req: IO[Request[IO]]): IO[HttpResponse] = {
-    httpClientIO flatMap { (client) =>
-      {
-        val res = Ok(client.expect[String](req))
-        for {
-          response <- res
-          body     <- response.as[String]
-        } yield
-          HttpResponse(
-            response.headers.toList.map(s => s.toString),
-            body,
-            response.status.toString.substring(0, 3).toInt
-          )
+      def makeReq(req: IO[Request[IO]]): IO[HttpResponse] = {
+        httpClientIO flatMap { (client) =>
+          {
+            val res = Ok(client.expect[String](req))
+            for {
+              response <- res
+              body     <- response.as[String]
+            } yield
+              HttpResponse(
+                response.headers.toList.map(s => s.toString),
+                body,
+                response.status.toString.substring(0, 3).toInt
+              )
+          }
+        }
       }
     }
-  }
 
 }

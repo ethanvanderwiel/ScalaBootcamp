@@ -1,9 +1,10 @@
 import org.specs2.mutable.Specification
 import org.specs2.specification.BeforeAfterEach
 import org.specs2.specification.BeforeEach
+import cats.effect._
 
 //Need to replace comments with what they should be. Guide isn't clear on what it means (xxx should {xxx in {...}})
-object MilestoneSpec extends Specification with HttpClient {
+object MilestoneSpec extends Specification {
   sequential
   lazy val searchVector = Vector(
     ("Cats"),
@@ -39,50 +40,73 @@ object MilestoneSpec extends Specification with HttpClient {
     User("user9", "userpass9", Vector()),
     User("user10", "userpass10", Vector())
   )
-
+  val repo = UserSearchRepository.impl
   "UserSearchRepository" should {
     "clear" in {
-      UserSearchRepository.clear
-      UserSearchRepository.getAll must beEqualTo(Seq())
+      val ioWrapped = for {
+        x      <- repo.clear
+        finish <- repo.getAll
+      } yield (finish must beEqualTo(Seq()))
+
+      ioWrapped.unsafeRunSync
     }
     "create" in {
-      UserSearchRepository.create(userVector(0)) must beEqualTo(Some(userVector(0)))
+      repo.create(userVector(0)).map(created => created must beEqualTo(Some(userVector(0)))).unsafeRunSync
     }
     "get all" in {
-      UserSearchRepository.clear
-      UserSearchRepository.create(userVector(0))
-      UserSearchRepository.create(userVector(1))
-      UserSearchRepository.getAll must beEqualTo(Seq(userVector(0), userVector(1)))
+      val ioWrapped = for {
+        x      <- repo.clear
+        x      <- repo.create(userVector(0))
+        x      <- repo.create(userVector(1))
+        finish <- repo.getAll
+      } yield (finish must beEqualTo(Seq(userVector(0), userVector(1))))
+
+      ioWrapped.unsafeRunSync
     }
     "delete" in {
-      UserSearchRepository.clear
-      UserSearchRepository.create(userVector(0))
-      UserSearchRepository.create(userVector(1))
-      UserSearchRepository.delete(userVector(0))
-      UserSearchRepository.getAll must beEqualTo(Seq(userVector(1)))
+      val ioWrapped = for {
+        x      <- repo.clear
+        x      <- repo.create(userVector(0))
+        x      <- repo.create(userVector(1))
+        x      <- repo.delete(userVector(0))
+        finish <- repo.getAll
+      } yield (finish must beEqualTo(Seq(userVector(1))))
+
+      ioWrapped.unsafeRunSync
     }
     "delete nonexistent" in {
-      UserSearchRepository.clear
-      UserSearchRepository.create(userVector(0))
-      UserSearchRepository.create(userVector(1))
-      UserSearchRepository.delete(userVector(2)) must beEqualTo(None)
-      UserSearchRepository.getAll must beEqualTo(Seq(userVector(0), userVector(1)))
+      val ioWrapped = for {
+        x      <- repo.clear
+        x      <- repo.create(userVector(0))
+        x      <- repo.create(userVector(1))
+        x      <- repo.delete(userVector(2))
+        finish <- repo.getAll
+      } yield (finish must beEqualTo(Seq(userVector(0), userVector(1))))
+
+      ioWrapped.unsafeRunSync
     }
     "create existent" in {
-      UserSearchRepository.clear
-      UserSearchRepository.create(userVector(0))
-      UserSearchRepository.create(userVector(1))
-      UserSearchRepository.create(userVector(0))
-      UserSearchRepository.getAll must beEqualTo(Seq(userVector(0), userVector(1)))
+      val ioWrapped = for {
+        x      <- repo.clear
+        x      <- repo.create(userVector(0))
+        x      <- repo.create(userVector(1))
+        x      <- repo.create(userVector(0))
+        finish <- repo.getAll
+      } yield (finish must beEqualTo(Seq(userVector(0), userVector(1))))
+
+      ioWrapped.unsafeRunSync()
     }
   }
 
   "Circe Json Parse" should {
     "Write user data" in {
-      UserSearchRepository.clear
-      val jsonUser = CirceParse.encodeAllUsers(userVector)
-      val decoded  = CirceParse.decodeAllUsers
-      decoded must beEqualTo(userVector)
+      repo.clear
+        .flatMap(wrapped => {
+          val jsonUser = CirceParse.encodeAllUsers(userVector)
+          val decoded  = CirceParse.decodeAllUsers
+          IO(decoded must beEqualTo(userVector))
+        })
+        .unsafeRunSync
     }
   }
 
