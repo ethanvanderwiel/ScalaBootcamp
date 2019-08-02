@@ -20,11 +20,11 @@ object CirceParse {
     jsonString
   }
 
-  def decodeAllUsers: Vector[User] = {
+  def decodeAllUsers: List[User] = {
     val bufferedSource = Source.fromFile("database.txt")
     val stringList     = bufferedSource.getLines.mkString
     bufferedSource.close
     val json: Json = parse(stringList).getOrElse(Json.Null)
-    json.as[Vector[User]].getOrElse(Vector())
+    json.as[List[User]].getOrElse(Nil)
   }
 }

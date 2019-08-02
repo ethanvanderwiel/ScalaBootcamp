@@ -1,7 +1,19 @@
 import org.specs2.mutable.Specification
 import org.specs2.specification.BeforeAfterEach
 import org.specs2.specification.BeforeEach
+import org.http4s.client.blaze._
+import org.http4s.Uri
+import org.http4s.client.dsl.io._
 import cats.effect._
+import doobie._
+import doobie.implicits._
+import doobie.util.ExecutionContexts
+import cats._
+import cats.effect.{ContextShift, IO, Sync}
+import cats.data._
+import cats.implicits._
+import fs2.Stream
+import cats.{Applicative, Monoid, Traverse}
 
 //Need to replace comments with what they should be. Guide isn't clear on what it means (xxx should {xxx in {...}})
 object MilestoneSpec extends Specification {
@@ -40,7 +52,18 @@ object MilestoneSpec extends Specification {
     User("user9", "userpass9", Vector()),
     User("user10", "userpass10", Vector())
   )
-  val repo = UserSearchRepository.impl
+  implicit val cs = IO.contextShift(ExecutionContexts.synchronous)
+
+  // A transactor that gets connections from java.sql.DriverManager and executes blocking operations
+  // on an our synchronous EC. See the chapter on connection handling for more info.
+  val xa = Transactor.fromDriverManager[IO](
+    "org.postgresql.Driver",     // driver classname
+    "jdbc:postgresql:test",     // connect URL (driver-specific)
+    "postgres",                  // user
+    "",                          // password
+    ExecutionContexts.synchronous // just for testing
+  )
+  val repo = UserSearchRepository.impl[IO](xa)
   "UserSearchRepository" should {
     "clear" in {
       val ioWrapped = for {

@@ -1,116 +1,62 @@
 [
   {
     "username" : "user1",
-    "password" : "pass1",
+    "password" : "userpass1",
     "searches" : [
-      {
-        "searchString" : "cat",
-        "results" : [
-          {
-            "name" : "Cat",
-            "desc" : " A small, typically furry, carnivorous mammal. They are often called house cats when kept as..."
-          },
-          {
-            "name" : "Cat Stevens",
-            "desc" : "A British singer-songwriter and multi-instrumentalist."
-          },
-          {
-            "name" : "Computed axial tomography",
-            "desc" : "A CT scan, also known as computed tomography scan, makes use of computer-processed combinations..."
-          }
-        ]
-      },
-      {
-        "searchString" : "house",
-        "results" : [
-          {
-            "name" : "House",
-            "desc" : "A building that functions as a home."
-          },
-          {
-            "name" : "House (TV series)",
-            "desc" : "An American television medical drama that originally ran on the Fox network for eight seasons..."
-          },
-          {
-            "name" : "House music",
-            "desc" : "A genre of electronic dance music created by club DJs and music producers in Chicago in the early..."
-          }
-        ]
-      },
-      {
-        "searchString" : "house",
-        "results" : [
-          {
-            "name" : "House",
-            "desc" : "A building that functions as a home."
-          },
-          {
-            "name" : "House (TV series)",
-            "desc" : "An American television medical drama that originally ran on the Fox network for eight seasons..."
-          },
-          {
-            "name" : "House music",
-            "desc" : "A genre of electronic dance music created by club DJs and music producers in Chicago in the early..."
-          }
-        ]
-      }
     ]
   },
   {
     "username" : "user2",
-    "password" : "pass2",
+    "password" : "userpass2",
     "searches" : [
-      {
-        "searchString" : "bird",
-        "results" : [
-          {
-            "name" : "Bird",
-            "desc" : "A group of endothermic vertebrates, characterised by feathers, toothless beaked jaws, the laying..."
-          },
-          {
-            "name" : "Birds in the Trap Sing McKnight",
-            "desc" : " The second studio album by American rapper Travis Scott."
-          },
-          {
-            "name" : "The Byrds",
-            "desc" : "An American rock band, formed in Los Angeles, California in 1964."
-          }
-        ]
-      },
-      {
-        "searchString" : "cat",
-        "results" : [
-          {
-            "name" : "Cat",
-            "desc" : " A small, typically furry, carnivorous mammal. They are often called house cats when kept as..."
-          },
-          {
-            "name" : "Cat Stevens",
-            "desc" : "A British singer-songwriter and multi-instrumentalist."
-          },
-          {
-            "name" : "Computed axial tomography",
-            "desc" : "A CT scan, also known as computed tomography scan, makes use of computer-processed combinations..."
-          }
-        ]
-      },
-      {
-        "searchString" : "house",
-        "results" : [
-          {
-            "name" : "House",
-            "desc" : "A building that functions as a home."
-          },
-          {
-            "name" : "House (TV series)",
-            "desc" : "An American television medical drama that originally ran on the Fox network for eight seasons..."
-          },
-          {
-            "name" : "House music",
-            "desc" : "A genre of electronic dance music created by club DJs and music producers in Chicago in the early..."
-          }
-        ]
-      }
+    ]
+  },
+  {
+    "username" : "user3",
+    "password" : "userpass3",
+    "searches" : [
+    ]
+  },
+  {
+    "username" : "user4",
+    "password" : "userpass4",
+    "searches" : [
+    ]
+  },
+  {
+    "username" : "user5",
+    "password" : "userpass5",
+    "searches" : [
+    ]
+  },
+  {
+    "username" : "user6",
+    "password" : "userpass6",
+    "searches" : [
+    ]
+  },
+  {
+    "username" : "user7",
+    "password" : "userpass7",
+    "searches" : [
+    ]
+  },
+  {
+    "username" : "user8",
+    "password" : "userpass8",
+    "searches" : [
+    ]
+  },
+  {
+    "username" : "user9",
+    "password" : "userpass9",
+    "searches" : [
+    ]
+  },
+  {
+    "username" : "user10",
+    "password" : "userpass10",
+    "searches" : [
     ]
   }
 ]

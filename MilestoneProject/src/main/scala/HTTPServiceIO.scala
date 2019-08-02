@@ -4,8 +4,7 @@ import cats.implicits._
 import org.http4s.circe._
 import org.http4s.server.blaze._
 import org.http4s.implicits._
-import fs2.{Stream, StreamApp}
-import fs2.StreamApp.ExitCode
+import cats.effect.{ExitCode, IO, IOApp}
 import org.http4s.client.blaze._
 import org.http4s.Uri
 import org.http4s.client.dsl.io._
@@ -21,6 +20,7 @@ import io.circe.generic.semiauto._
 import cats.syntax.either._
 import cats.data._
 import io.circe.syntax._
+
 
 case class UserCreds(username: String, password: String)
 case class ChangePassword(username: String, oldPassword: String, newPassword: String)
@@ -57,11 +57,13 @@ object UserCode {
   implicit val changePassEntityEncoder: EntityEncoder[IO, ChangePassword] = jsonEncoderOf
 }
 
-object IOMain extends StreamApp[IO] {
+
+//Switch to IOApp
+object IOMain extends IOApp {
   object q extends QueryParamDecoderMatcher[String]("q")
   import UserCode._
 
-  def databaseService(httpServe: HttpService[IO, Response]) = HttpService[IO] {
+  def databaseService(httpServe: HttpService[IO, Response]) = HttpRoutes.of[IO] {
     case GET -> Root / "ping" =>
       Ok("Pong")
 
@@ -90,16 +92,19 @@ object IOMain extends StreamApp[IO] {
       httpServe.search(req.as[UserCreds], searchString)
   }
 
-  override def stream(args: List[String], requestShutdown: IO[Unit]): Stream[IO, ExitCode] = {
+  override def run(args: List[String]): IO[ExitCode] = {
     //Creates algebras
-    val httpclient = HttpClient.impl(Http1Client[IO]())
-    val repo       = UserSearchRepository.impl
-    val fetch      = Http.impl(httpclient)
-    val httpServe  = HttpServiceImpl.impl(repo, fetch)
-
-    BlazeBuilder[IO]
+    import transactor.xa
+    (for {
+      client <- BlazeClientBuilder[IO](scala.concurrent.ExecutionContext.global).stream
+      httpclient = HttpClient.impl(client)
+      repo       = UserSearchRepository.impl[IO](xa)
+      fetch      = Http.impl(httpclient)
+      httpServe  = HttpServiceImpl.impl(repo, fetch)
+      server <- BlazeServerBuilder[IO]
       .bindHttp(9000, "localhost")
-      .mountService(databaseService(httpServe), "/")
+      .withHttpApp(databaseService(httpServe).orNotFound)
       .serve
+    } yield(server)).compile.drain.as(ExitCode.Success)
   }
 }

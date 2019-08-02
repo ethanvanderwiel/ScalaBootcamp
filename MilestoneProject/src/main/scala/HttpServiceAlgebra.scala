@@ -4,8 +4,6 @@ import cats.implicits._
 import org.http4s.circe._
 import org.http4s.server.blaze._
 import org.http4s.implicits._
-import fs2.{Stream, StreamApp}
-import fs2.StreamApp.ExitCode
 import org.http4s.client.blaze._
 import org.http4s.Uri
 import org.http4s.client.dsl.io._
