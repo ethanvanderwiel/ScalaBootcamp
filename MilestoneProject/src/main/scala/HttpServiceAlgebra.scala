@@ -19,6 +19,10 @@ import io.circe.generic.semiauto._
 import cats.syntax.either._
 import cats.data._
 import io.circe.syntax._
+import org.http4s.client._
+import org.http4s.client
+import org.http4s.dsl._
+import org.http4s.client.dsl._
 
 //F is most commonly IO, G is most commonly Response
 trait HttpService[F[_], G[F[_]]] {
@@ -28,16 +32,25 @@ trait HttpService[F[_], G[F[_]]] {
   def searchTermsGet: F[G[F]]
   def searchTermsPost(user: F[UserCreds]): F[G[F]]
   def mostCommonSearchGet: F[G[F]]
-  def mostCommonSearchPost(user: F[UserCreds]): F[G[IO]]
-  def search(user: F[UserCreds], searchString: String): F[G[IO]]
+  def mostCommonSearchPost(user: F[UserCreds]): F[G[F]]
+  def search(user: F[UserCreds], searchString: String): F[G[F]]
 }
 
 object HttpServiceImpl {
   import UserCode._
-  def impl(repo: Repository[User, IO], fetch: Fetch[IO]): HttpService[IO, Response] =
-    new HttpService[IO, Response] {
 
-      override def validateUser(user: IO[UserCreds]): IO[Response[IO]] = {
+  def impl[F[_]](repo: Repository[User, F], fetch: Fetch[F])(implicit F: Sync[F]): HttpService[F, Response] =
+    new HttpService[F, Response] with Http4sDsl[F] with Http4sClientDsl[F] {
+      implicit val resultEntityDecoderF: EntityDecoder[F, Result] = jsonOf
+      implicit val resultEntityEncoderF: EntityEncoder[F, Result] = jsonEncoderOf
+
+      implicit val searchEntityDecoderF: EntityDecoder[F, Search] = jsonOf
+      implicit val searchEntityEncoderF: EntityEncoder[F, Search] = jsonEncoderOf
+
+      implicit val userEntityDecoderF: EntityDecoder[F, User] = jsonOf
+      implicit val userEntityEncoderF: EntityEncoder[F, User] = jsonEncoderOf
+
+      override def validateUser(user: F[UserCreds]): F[Response[F]] = {
         user.flatMap { (u) =>
           {
             repo.get(u.username).flatMap { (userCheck) =>
@@ -50,7 +63,7 @@ object HttpServiceImpl {
         }
       }
 
-      override def createUser(user: IO[UserCreds]): IO[Response[IO]] = {
+      override def createUser(user: F[UserCreds]): F[Response[F]] = {
         user.flatMap { (u) =>
           {
             repo.get(u.username).flatMap { (repoResponse) =>
@@ -65,7 +78,7 @@ object HttpServiceImpl {
         }
       }
 
-      override def checkPassToUpdate(user: IO[ChangePassword]): IO[Response[IO]] = {
+      override def checkPassToUpdate(user: F[ChangePassword]): F[Response[F]] = {
         user.flatMap { (u) =>
           {
             repo.get(u.username).flatMap { (userCheck) =>
@@ -79,7 +92,7 @@ object HttpServiceImpl {
         }
       }
 
-      def updatePass(user: User): IO[Response[IO]] = {
+      def updatePass(user: User): F[Response[F]] = {
         repo.update(User(user.username, user.password, user.searches)).flatMap { (updatedUser) =>
           updatedUser match {
             case None    => Forbidden()
@@ -88,10 +101,10 @@ object HttpServiceImpl {
         }
       }
 
-      override def searchTermsGet: IO[Response[IO]] = {
+      override def searchTermsGet: F[Response[F]] = {
 
         Ok(repo.getAll.flatMap { (getridofIO) =>
-          IO(
+          F.delay(
             getridofIO
               .flatMap(user => user.searches)
               .map(search => search.searchString)
@@ -101,7 +114,7 @@ object HttpServiceImpl {
         })
       }
 
-      override def searchTermsPost(user: IO[UserCreds]): IO[Response[IO]] = {
+      override def searchTermsPost(user: F[UserCreds]): F[Response[F]] = {
         validateUser(user).flatMap { (validation) =>
           {
             validation match {
@@ -123,15 +136,15 @@ object HttpServiceImpl {
         }
       }
 
-      override def mostCommonSearchGet: IO[Response[IO]] = {
+      override def mostCommonSearchGet: F[Response[F]] = {
         Ok(
           repo.getAll.flatMap { (all) =>
-            IO(Milestone.mostCommonSearchAllUsersFold(Vector() ++ all).asJson)
+            F.delay(Milestone.mostCommonSearchAllUsersFold(Vector() ++ all).asJson)
           }
         )
       }
 
-      override def mostCommonSearchPost(user: IO[UserCreds]): IO[Response[IO]] = {
+      override def mostCommonSearchPost(user: F[UserCreds]): F[Response[F]] = {
         validateUser(user).flatMap { validation =>
           {
             validation match {
@@ -151,12 +164,12 @@ object HttpServiceImpl {
         }
       }
 
-      override def search(user: IO[UserCreds], searchString: String): IO[Response[IO]] = {
+      override def search(user: F[UserCreds], searchString: String): F[Response[F]] = {
         validateUser(user).flatMap { (validation) =>
           {
             validation match {
               case Ok(x) =>
-                val resultsIO: IO[Vector[Result]] = fetch.fetchResultsIO(searchString)
+                val resultsIO: F[Vector[Result]] = fetch.fetchResultsIO(searchString)
                 user.flatMap { (u) =>
                   {
                     repo.get(u.username).flatMap { (checkUser) =>

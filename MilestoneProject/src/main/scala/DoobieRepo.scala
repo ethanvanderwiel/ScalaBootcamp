@@ -11,17 +11,13 @@ import cats.{Applicative, Monoid, Traverse}
 object transactor {
   implicit val cs = IO.contextShift(ExecutionContexts.synchronous)
 
-// A transactor that gets connections from java.sql.DriverManager and executes blocking operations
-// on an our synchronous EC. See the chapter on connection handling for more info.
-val xa = Transactor.fromDriverManager[IO](
-  "org.postgresql.Driver",     // driver classname
-  "jdbc:postgresql:test",     // connect URL (driver-specific)
-  "postgres",                  // user
-  "",                          // password
-  ExecutionContexts.synchronous // just for testing
-)
+  val xa = Transactor.fromDriverManager[IO](
+    "org.postgresql.Driver",      // driver classname
+    "jdbc:postgresql:test",       // connect URL (driver-specific)
+    "postgres",                   // user
+    ""
+  )
 }
-
 
 trait Repository[A, F[_]] {
   def getAll: F[List[A]]
@@ -29,12 +25,13 @@ trait Repository[A, F[_]] {
   def create(x: A): F[Option[A]]
   def update(x: A): F[Option[A]]
   def delete(x: A): F[Option[A]]
+  def clear: F[Int]
 }
 
 object UserSearchRepository {
   def impl[F[_]](xa: Transactor[F])(implicit F: Sync[F]) =
     new Repository[User, F] {
-      def getAll: F[List[User]] = {
+      override def getAll: F[List[User]] = {
         val sqlResponse = sql"""SELECT * FROM users"""
           .query[(String, String)]
           .to[List]
@@ -42,31 +39,33 @@ object UserSearchRepository {
         for {
           users <- sqlResponse
           user  <- users.traverse(makeUserFromUserCreds)
-        } yield user
+        } yield  user
       }
 
       def makeUserFromUserCreds(user: (String, String)): F[User] = {
-        val sqlResponse = sql"""SELECT searchString FROM searches WHERE username = '${user._1}'"""
+        val sqlResponse = sql"""SELECT searchString FROM searches WHERE username = ${user._1}"""
           .query[String]
           .to[List]
           .transact(xa)
+        val sqlModResponse = sqlResponse.map((searchStrings) => searchStrings.map(search => (search, user._1)))
 
         for {
-          searchStrings <- sqlResponse
+          searchStrings <- sqlModResponse
           searches      <- searchStrings.traverse(makeSearchFromSearchString)
         } yield User(user._1, user._2, Vector() ++ searches)
       }
 
-      def makeSearchFromSearchString(searchString: String): F[Search] = {
-        val sqlResponse = sql"""SELECT title, description FROM results WHERE searchstring = '$searchString'"""
-          .query[(String, String)]
-          .to[List]
-          .transact(xa)
+      def makeSearchFromSearchString(searchWithUsername: (String, String)): F[Search] = {
+        val sqlResponse =
+          sql"""SELECT title, description FROM results WHERE searchstring = ${searchWithUsername._1} and username = ${searchWithUsername._2}"""
+            .query[(String, String)]
+            .to[List]
+            .transact(xa)
         val listVectors = sqlResponse.map((list) => list.map(resultTuple => Result(resultTuple._1, resultTuple._2)))
-        listVectors.map((results) => Search(searchString, Vector() ++ results))
+        listVectors.map((results) => Search(searchWithUsername._1, Vector() ++ results))
       }
       override def get(id: String): F[Option[User]] = {
-        val sqlResponse = sql"""SELECT password FROM users WHERE username = '$id'"""
+        val sqlResponse = sql"""SELECT password FROM users WHERE username = $id"""
           .query[String]
           .to[List]
           .transact(xa)
@@ -83,12 +82,12 @@ object UserSearchRepository {
         (checkuser) match {
           case Some(user) => F.delay(None)
           case _ =>
-            val effect = sql"""insert into users (username, password) VALUES ('${x.username}', '${x.password}')""".update.run
+            val effect = sql"""insert into users VALUES (${x.username}, ${x.password})""".update.run
               .transact(xa)
             for {
               f <- effect
               f <- addSearches(x)
-            } yield(Some(x))
+            } yield (Some(x))
 
         }
       }
@@ -96,17 +95,19 @@ object UserSearchRepository {
       def addSearches(x: User): F[Unit] = {
         val effects = x.searches.map(search => {
           for {
-            f <- sql"""INSERT INTO searches (username, searchstring) VALUES ("${x.username}", "${search.searchString}")""".update.run.transact(xa)
+            f <- sql"""INSERT INTO searches VALUES (${x.username}, ${search.searchString})""".update.run.transact(xa)
             f <- addResults(search, x.username)
-          } yield()
+          } yield ()
         })
         val wrapped: F[Vector[Unit]] = effects.sequence
         wrapped.map(_ => ())
       }
 
       def addResults(s: Search, username: String): F[Unit] = {
-        val effects = s.results.map(result =>
-          sql"""INSERT INTO results (searchstring, title, description, username) VALUES ("${s.searchString}", "${result.name}", "${result.desc}", "${username}")""".update.run.transact(xa)
+        val effects = s.results.map(
+          result =>
+            sql"""INSERT INTO results VALUES (${s.searchString}, ${result.name}, ${result.desc}, ${username})""".update.run
+              .transact(xa)
         )
         val wrapped: F[Vector[Int]] = effects.sequence
         wrapped.map(_ => ())
@@ -119,7 +120,7 @@ object UserSearchRepository {
             for {
               deleted <- delete(x)
               created <- create(x)
-            } yield(Some(x))
+            } yield (Some(x))
         }
       }
       override def delete(x: User): F[Option[User]] = get(x.username).flatMap { checkUser =>
@@ -127,32 +128,20 @@ object UserSearchRepository {
           case None => F.delay(None)
           case Some(user) =>
             for {
-              f <- sql"""DELETE FROM searches WHERE username == '${x.username}'""".update.run.transact(xa)
-              f <- sql"""DELETE FROM results WHERE username == '${x.username}'""".update.run.transact(xa)
-              f <- sql"""DELETE FROM users WHERE username == '${x.username}'""".update.run.transact(xa)
-            } yield( Some(user) )
+              f <- sql"""DELETE FROM searches WHERE username = ${x.username}""".update.run.transact(xa)
+              f <- sql"""DELETE FROM results WHERE username = ${x.username}""".update.run.transact(xa)
+              f <- sql"""DELETE FROM users WHERE username = ${x.username}""".update.run.transact(xa)
+            } yield (Some(user))
         }
 
       }
-      def clear: F[Unit] = F.delay {
-        for{
+      def clear: F[Int] = {
+        for {
           f <- sql"""DELETE FROM searches""".update.run.transact(xa)
           f <- sql"""DELETE FROM results""".update.run.transact(xa)
           f <- sql"""DELETE FROM users""".update.run.transact(xa)
-        } yield()
+        } yield (f)
       }
 
-    }
-    def main(args: Array[String]) = {
-      import transactor._
-      val repo = UserSearchRepository.impl[IO](xa)
-      // println(sql"""SELECT * FROM users""".query[(String, String)].to[List].transact(xa).unsafeRunSync)
-      // println(sql"""SELECT * FROM searches WHERE username = 'Ethan'"""
-      // .query[(String, String)]
-      // .to[List]
-      // .transact(xa).unsafeRunSync)
-      println(repo.getAll.unsafeRunSync)
-      //println(repo.create(User("ethan", "yay", Vector())).unsafeRunSync)
-      //println(repo.getAll.unsafeRunSync)
     }
 }

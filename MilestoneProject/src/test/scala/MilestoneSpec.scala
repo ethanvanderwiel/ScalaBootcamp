@@ -15,7 +15,6 @@ import cats.implicits._
 import fs2.Stream
 import cats.{Applicative, Monoid, Traverse}
 
-//Need to replace comments with what they should be. Guide isn't clear on what it means (xxx should {xxx in {...}})
 object MilestoneSpec extends Specification {
   sequential
   lazy val searchVector = Vector(
@@ -54,14 +53,11 @@ object MilestoneSpec extends Specification {
   )
   implicit val cs = IO.contextShift(ExecutionContexts.synchronous)
 
-  // A transactor that gets connections from java.sql.DriverManager and executes blocking operations
-  // on an our synchronous EC. See the chapter on connection handling for more info.
   val xa = Transactor.fromDriverManager[IO](
-    "org.postgresql.Driver",     // driver classname
-    "jdbc:postgresql:test",     // connect URL (driver-specific)
-    "postgres",                  // user
-    "",                          // password
-    ExecutionContexts.synchronous // just for testing
+    "org.postgresql.Driver",      // driver classname
+    "jdbc:postgresql:test",       // connect URL (driver-specific)
+    "postgres",                   // user
+    ""
   )
   val repo = UserSearchRepository.impl[IO](xa)
   "UserSearchRepository" should {

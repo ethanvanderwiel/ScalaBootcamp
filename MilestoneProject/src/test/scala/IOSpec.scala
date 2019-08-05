@@ -50,6 +50,8 @@
 //     "",                          // password
 //     ExecutionContexts.synchronous // just for testing
 //   )
+
+
 //   val client = BlazeClientBuilder[IO](scala.concurrent.ExecutionContext.global).stream
 //       val httpclient = HttpClient.impl(client)
 //       val repo       = UserSearchRepository.impl[IO](xa)

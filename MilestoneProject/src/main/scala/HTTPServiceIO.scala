@@ -21,7 +21,6 @@ import cats.syntax.either._
 import cats.data._
 import io.circe.syntax._
 
-
 case class UserCreds(username: String, password: String)
 case class ChangePassword(username: String, oldPassword: String, newPassword: String)
 
@@ -56,7 +55,6 @@ object UserCode {
   implicit val changePassEntityDecoder: EntityDecoder[IO, ChangePassword] = jsonOf
   implicit val changePassEntityEncoder: EntityEncoder[IO, ChangePassword] = jsonEncoderOf
 }
-
 
 //Switch to IOApp
 object IOMain extends IOApp {
@@ -97,14 +95,14 @@ object IOMain extends IOApp {
     import transactor.xa
     (for {
       client <- BlazeClientBuilder[IO](scala.concurrent.ExecutionContext.global).stream
-      httpclient = HttpClient.impl(client)
+      httpclient = HttpClient.impl[IO](client)
       repo       = UserSearchRepository.impl[IO](xa)
-      fetch      = Http.impl(httpclient)
-      httpServe  = HttpServiceImpl.impl(repo, fetch)
+      fetch      = Http.impl[IO](httpclient)
+      httpServe  = HttpServiceImpl.impl[IO](repo, fetch)
       server <- BlazeServerBuilder[IO]
-      .bindHttp(9000, "localhost")
-      .withHttpApp(databaseService(httpServe).orNotFound)
-      .serve
-    } yield(server)).compile.drain.as(ExitCode.Success)
+        .bindHttp(9000, "localhost")
+        .withHttpApp(databaseService(httpServe).orNotFound)
+        .serve
+    } yield (server)).compile.drain.as(ExitCode.Success)
   }
 }

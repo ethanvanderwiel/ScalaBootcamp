@@ -1,6 +1,9 @@
 import io.circe._, io.circe.parser._
 import cats.syntax.either._
 import cats.effect._
+import cats.syntax._
+import cats.{Applicative, Monoid, Traverse}
+import cats.syntax.functor._, cats.syntax.flatMap._
 
 trait Fetch[F[_]] {
   def fetchResultsIO(term: String): F[Vector[Result]]
@@ -9,17 +12,17 @@ trait Fetch[F[_]] {
 }
 
 object Http {
-  def impl(httpClient: HttpClient[IO]): Fetch[IO] =
-    new Fetch[IO] {
-      override def fetchResultsIO(term: String): IO[Vector[Result]] =
+  def impl[F[_]](httpClient: HttpClient[F])(implicit F: Sync[F]): Fetch[F] =
+    new Fetch[F] {
+      override def fetchResultsIO(term: String): F[Vector[Result]] =
         createResultsIO(searchForIO(term))
 
-      override def searchForIO(term: String): IO[HttpResponse] = {
+      override def searchForIO(term: String): F[HttpResponse] = {
         val searchURL = s"https://api.duckduckgo.com/?q=${term}&format=json&pretty=1"
         httpClient.executeHttpGetIO(searchURL)
       }
 
-      override def createResultsIO(httpIO: IO[HttpResponse]): IO[Vector[Result]] = {
+      override def createResultsIO(httpIO: F[HttpResponse]): F[Vector[Result]] = {
         httpIO.flatMap { (http) =>
           {
             val json: Json      = parse(http.body).getOrElse(Json.Null)
@@ -41,7 +44,7 @@ object Http {
               })
               .filter(_ != None)
             /* Uses regex to grab the search title and description. Places both into a new Result object */
-            IO(
+            F.delay(
               Vector() ++ sorted.map(
                 (sent) => {
                   val pattern                                 = "(<a ([^\\s]+)>)(.*?)(</a>)(.*?)".r

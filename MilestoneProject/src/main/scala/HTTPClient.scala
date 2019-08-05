@@ -16,8 +16,6 @@ import scala.annotation.unspecialized
 import org.http4s.client._
 import org.http4s.client
 
-
-
 case class HttpResponse(header: List[String], body: String, statusCode: Int)
 
 trait HttpClient[F[_]] {
@@ -30,7 +28,8 @@ object HttpClient {
     new HttpClient[F] with Http4sDsl[F] with Http4sClientDsl[F] {
       override def executeHttpPostIO(url: String, values: Map[String, String]): F[HttpResponse] = {
         val postRequest = POST[Json](
-          values.asJson, Uri.fromString(url).valueOr(throw _)
+          values.asJson,
+          Uri.fromString(url).valueOr(throw _)
         )
         makeReq(postRequest)
       }
@@ -40,18 +39,18 @@ object HttpClient {
 
       def makeReq(req: F[Request[F]]): F[HttpResponse] = {
 
-            val res = Ok(httpClientIO.expect[String](req))
-            for {
-              response <- res
-              body     <- response.as[String]
-            } yield
-              HttpResponse(
-                response.headers.toList.map(s => s.toString),
-                body,
-                response.status.toString.substring(0, 3).toInt
-              )
-          }
-
+        val res = Ok(httpClientIO.expect[String](req))
+        for {
+          response <- res
+          body     <- response.as[String]
+        } yield
+          HttpResponse(
+            response.headers.toList.map(s => s.toString),
+            body,
+            response.status.toString.substring(0, 3).toInt
+          )
       }
+
+    }
 
 }
