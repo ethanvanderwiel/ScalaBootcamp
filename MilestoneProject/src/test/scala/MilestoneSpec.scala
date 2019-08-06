@@ -54,9 +54,9 @@ object MilestoneSpec extends Specification {
   implicit val cs = IO.contextShift(ExecutionContexts.synchronous)
 
   val xa = Transactor.fromDriverManager[IO](
-    "org.postgresql.Driver",      // driver classname
-    "jdbc:postgresql:test",       // connect URL (driver-specific)
-    "postgres",                   // user
+    "org.postgresql.Driver",
+    "jdbc:postgresql:test",
+    "postgres",
     ""
   )
   val repo = UserSearchRepository.impl[IO](xa)
@@ -114,18 +114,6 @@ object MilestoneSpec extends Specification {
       } yield (finish must beEqualTo(Seq(userVector(0), userVector(1))))
 
       ioWrapped.unsafeRunSync()
-    }
-  }
-
-  "Circe Json Parse" should {
-    "Write user data" in {
-      repo.clear
-        .flatMap(wrapped => {
-          val jsonUser = CirceParse.encodeAllUsers(userVector)
-          val decoded  = CirceParse.decodeAllUsers
-          IO(decoded must beEqualTo(userVector))
-        })
-        .unsafeRunSync
     }
   }
 

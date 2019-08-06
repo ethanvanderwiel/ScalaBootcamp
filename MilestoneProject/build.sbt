@@ -1,6 +1,8 @@
+enablePlugins(FlywayPlugin)
 name := "milestoneProject"
 libraryDependencies += "org.specs2" %% "specs2-core" % "3.8.6" % Test
 val http4sVersion = "0.20.3"
+val flyWayVersion = "5.2.4"
 
 libraryDependencies ++= Seq(
   "org.http4s" %% "http4s-dsl" % http4sVersion,
@@ -26,9 +28,12 @@ libraryDependencies ++= Seq(
   "io.circe" %% "circe-literal" % "0.9.3",
   "io.circe" %% "circe-parser" % "0.9.3",
   "net.liftweb"       %% "lift-webkit" % "3.3.0" % "compile",
+  "org.flywaydb"    %  "flyway-core"         % flyWayVersion,
   "ch.qos.logback" % "logback-classic" % "1.2.3"
 
 )
+
+
 
 
 

@@ -12,9 +12,9 @@ object transactor {
   implicit val cs = IO.contextShift(ExecutionContexts.synchronous)
 
   val xa = Transactor.fromDriverManager[IO](
-    "org.postgresql.Driver",      // driver classname
-    "jdbc:postgresql:test",       // connect URL (driver-specific)
-    "postgres",                   // user
+    "org.postgresql.Driver",
+    "jdbc:postgresql:test",
+    "postgres",
     ""
   )
 }
@@ -39,7 +39,7 @@ object UserSearchRepository {
         for {
           users <- sqlResponse
           user  <- users.traverse(makeUserFromUserCreds)
-        } yield  user
+        } yield user
       }
 
       def makeUserFromUserCreds(user: (String, String)): F[User] = {
@@ -64,6 +64,7 @@ object UserSearchRepository {
         val listVectors = sqlResponse.map((list) => list.map(resultTuple => Result(resultTuple._1, resultTuple._2)))
         listVectors.map((results) => Search(searchWithUsername._1, Vector() ++ results))
       }
+
       override def get(id: String): F[Option[User]] = {
         val sqlResponse = sql"""SELECT password FROM users WHERE username = $id"""
           .query[String]

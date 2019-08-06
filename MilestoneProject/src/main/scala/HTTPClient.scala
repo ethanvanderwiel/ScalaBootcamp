@@ -24,7 +24,7 @@ trait HttpClient[F[_]] {
 }
 
 object HttpClient {
-  def impl[F[_]: Sync](httpClientIO: Client[F]): HttpClient[F] =
+  def impl[F[_]: Sync](httpClientResource: Resource[F, Client[F]]): HttpClient[F] =
     new HttpClient[F] with Http4sDsl[F] with Http4sClientDsl[F] {
       override def executeHttpPostIO(url: String, values: Map[String, String]): F[HttpResponse] = {
         val postRequest = POST[Json](
@@ -37,9 +37,8 @@ object HttpClient {
       override def executeHttpGetIO(url: String): F[HttpResponse] =
         makeReq(GET(Uri.fromString(url).valueOr(throw _)))
 
-      def makeReq(req: F[Request[F]]): F[HttpResponse] = {
-
-        val res = Ok(httpClientIO.expect[String](req))
+      def makeReq(req: F[Request[F]]): F[HttpResponse] = httpClientResource.use { client =>
+        val res = Ok(client.expect[String](req))
         for {
           response <- res
           body     <- response.as[String]

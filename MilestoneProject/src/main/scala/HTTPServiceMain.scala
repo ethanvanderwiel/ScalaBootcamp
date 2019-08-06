@@ -56,53 +56,23 @@ object UserCode {
   implicit val changePassEntityEncoder: EntityEncoder[IO, ChangePassword] = jsonEncoderOf
 }
 
-//Switch to IOApp
-object IOMain extends IOApp {
-  object q extends QueryParamDecoderMatcher[String]("q")
-  import UserCode._
-
-  def databaseService(httpServe: HttpService[IO, Response]) = HttpRoutes.of[IO] {
-    case GET -> Root / "ping" =>
-      Ok("Pong")
-
-    case req @ POST -> Root / "verify_user_cred" =>
-      httpServe.validateUser(req.as[UserCreds])
-
-    case req @ POST -> Root / "create_user" =>
-      httpServe.createUser(req.as[UserCreds])
-
-    case req @ POST -> Root / "change_password" =>
-      httpServe.checkPassToUpdate(req.as[ChangePassword])
-
-    case GET -> Root / "search_terms" =>
-      httpServe.searchTermsGet
-
-    case req @ POST -> Root / "search_terms" =>
-      httpServe.searchTermsPost(req.as[UserCreds])
-
-    case GET -> Root / "most_common_search" =>
-      httpServe.mostCommonSearchGet
-
-    case req @ POST -> Root / "most_common_search" =>
-      httpServe.mostCommonSearchPost(req.as[UserCreds])
-
-    case req @ POST -> Root / "search" :? q(searchString) =>
-      httpServe.search(req.as[UserCreds], searchString)
-  }
-
+object Main extends IOApp {
   override def run(args: List[String]): IO[ExitCode] = {
-    //Creates algebras
     import transactor.xa
+
+    val httpclient = HttpClient.impl[IO](BlazeClientBuilder[IO](scala.concurrent.ExecutionContext.global).resource)
+    val repo       = UserSearchRepository.impl[IO](xa)
+    val fetch      = Http.impl[IO](httpclient)
+    val httpServe  = HttpServiceImpl.impl[IO](repo, fetch)
+    Migrations.makeMigrations[IO]("jdbc:postgresql:test", "postgres", "").unsafeRunSync
+
     (for {
-      client <- BlazeClientBuilder[IO](scala.concurrent.ExecutionContext.global).stream
-      httpclient = HttpClient.impl[IO](client)
-      repo       = UserSearchRepository.impl[IO](xa)
-      fetch      = Http.impl[IO](httpclient)
-      httpServe  = HttpServiceImpl.impl[IO](repo, fetch)
+
       server <- BlazeServerBuilder[IO]
-        .bindHttp(9000, "localhost")
-        .withHttpApp(databaseService(httpServe).orNotFound)
+        .bindHttp(5000, "localhost")
+        .withHttpApp(Server.databaseService(httpServe).orNotFound)
         .serve
+
     } yield (server)).compile.drain.as(ExitCode.Success)
   }
 }
